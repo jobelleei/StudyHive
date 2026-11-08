@@ -1,0 +1,515 @@
+
+/* ==========================================
+   STUDYHIVE LOGIN PAGE
+========================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #ffdf42;
+    overflow-x: hidden;
+}
+
+
+/* ==========================================
+   MAIN LOGIN PAGE
+========================================== */
+
+.login-page {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 650px;
+    display: flex;
+    overflow: hidden;
+}
+
+
+/* ==========================================
+   LEFT WHITE SECTION
+========================================== */
+
+.login-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 53%;
+    height: 100%;
+
+    background: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 0 14% 14% 0 / 0 50% 50% 0;
+
+    z-index: 2;
+}
+
+
+/* ==========================================
+   LOGIN CONTAINER
+========================================== */
+
+.login-container {
+    width: 390px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    position: relative;
+}
+
+
+/* ==========================================
+   STUDYHIVE LOGO
+========================================== */
+
+.login-logo {
+    width: 115px;
+    height: 125px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 5px;
+}
+
+.login-logo img {
+    width: 110px;
+    height: 110px;
+
+    object-fit: contain;
+}
+
+
+/* ==========================================
+   LOGIN HEADING
+========================================== */
+
+.login-container h1 {
+    font-size: 46px;
+    font-weight: 700;
+    letter-spacing: 9px;
+
+    color: #4389df;
+
+    margin-bottom: 23px;
+    text-align: center;
+}
+
+
+/* ==========================================
+   LOGIN FORM
+========================================== */
+
+.login-container form {
+    width: 100%;
+}
+
+
+/* FORM GROUP */
+
+.form-group {
+    width: 100%;
+    margin-bottom: 17px;
+}
+
+
+/* INPUT LABELS */
+
+.form-group label {
+    display: block;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+
+    margin: 0 0 8px 15px;
+
+    color: #222222;
+}
+
+
+/* INPUT FIELDS */
+
+.form-group input {
+    width: 100%;
+    height: 55px;
+
+    padding: 0 20px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #f7f7f7;
+
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.22);
+
+    font-family: inherit;
+    font-size: 18px;
+
+    color: #333333;
+
+    outline: none;
+
+    transition: box-shadow 0.2s ease;
+}
+
+.form-group input::placeholder {
+    color: #999999;
+    font-weight: 300;
+    font-size: 17px;
+}
+
+.form-group input:focus {
+    box-shadow: 0 0 0 2px #ffca05;
+}
+
+
+/* ==========================================
+   PASSWORD HEADING
+========================================== */
+
+.password-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.password-heading label {
+    margin-bottom: 8px;
+}
+
+
+/* FORGOT PASSWORD */
+
+.forgot-password {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+
+    text-decoration: none;
+    color: #f5b900;
+
+    margin-bottom: 8px;
+}
+
+.forgot-password:hover {
+    color: #d99b00;
+    text-decoration: underline;
+}
+
+
+/* ==========================================
+   REMEMBER ME
+========================================== */
+
+.remember-group {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    margin: 18px 0 22px 10px;
+}
+
+.remember-group input {
+    width: 17px;
+    height: 17px;
+
+    accent-color: #ffc900;
+    cursor: pointer;
+}
+
+.remember-group label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+
+    cursor: pointer;
+}
+
+
+/* ==========================================
+   LOGIN BUTTON
+========================================== */
+
+.login-btn {
+    width: 100%;
+    height: 55px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #ffca05;
+    color: #ffffff;
+
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 4px;
+
+    cursor: pointer;
+
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.22);
+
+    transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+    background: #efb900;
+    transform: translateY(-2px);
+}
+
+
+/* ==========================================
+   SIGN UP LINK
+========================================== */
+
+.signup-text {
+    margin-top: 17px;
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+
+    text-align: center;
+    white-space: nowrap;
+
+    color: #222222;
+}
+
+.signup-text a {
+    color: #f5b900;
+    text-decoration: none;
+}
+
+.signup-text a:hover {
+    text-decoration: underline;
+}
+
+
+/* ==========================================
+   RIGHT ILLUSTRATION SECTION
+========================================== */
+
+.login-illustration {
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: 55%;
+    height: 100%;
+
+    background: #ffdf42;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1;
+    overflow: hidden;
+}
+
+
+/* PALE YELLOW BACKGROUND SHAPE */
+
+.illustration-background {
+    position: absolute;
+
+    top: 0;
+    left: -8%;
+
+    width: 100%;
+    height: 100%;
+
+    background: #fff4a2;
+
+    clip-path: polygon(
+        0 0,
+        16% 0,
+        26% 20%,
+        36% 45%,
+        27% 70%,
+        19% 100%,
+        0 100%
+    );
+
+    z-index: 0;
+}
+
+
+/* HONEY ILLUSTRATION */
+
+.honey-illustration {
+    position: relative;
+
+    display: block;
+
+    width: 72%;
+    max-width: 420px;
+
+    height: auto;
+
+    object-fit: contain;
+
+    z-index: 2;
+}
+
+
+/* ==========================================
+   TABLET RESPONSIVENESS
+========================================== */
+
+@media screen and (max-width: 900px) {
+
+    .login-section {
+        width: 55%;
+    }
+
+    .login-container {
+        width: 80%;
+        max-width: 360px;
+    }
+
+    .login-logo {
+        width: 100px;
+        height: 110px;
+    }
+
+    .login-logo img {
+        width: 95px;
+        height: 95px;
+    }
+
+    .login-container h1 {
+        font-size: 39px;
+    }
+
+    .login-illustration {
+        width: 50%;
+    }
+
+    .honey-illustration {
+        width: 85%;
+    }
+
+}
+
+
+/* ==========================================
+   MOBILE RESPONSIVENESS
+========================================== */
+
+@media screen and (max-width: 650px) {
+
+    body {
+        overflow-y: auto;
+    }
+
+    .login-page {
+        min-height: 100vh;
+        height: auto;
+        display: block;
+        background: #ffffff;
+    }
+
+    .login-section {
+        position: relative;
+
+        width: 100%;
+        min-height: 100vh;
+        height: auto;
+
+        border-radius: 0;
+        padding: 45px 25px;
+    }
+
+    .login-container {
+        width: min(100%, 390px);
+    }
+
+    .login-logo {
+        width: 100px;
+        height: 105px;
+    }
+
+    .login-logo img {
+        width: 95px;
+        height: 95px;
+    }
+
+    .login-container h1 {
+        font-size: 38px;
+    }
+
+    .login-illustration {
+        display: none;
+    }
+
+}
+
+
+/* ==========================================
+   SMALL MOBILE SCREENS
+========================================== */
+
+@media screen and (max-width: 380px) {
+
+    .login-container {
+        width: 100%;
+    }
+
+    .login-container h1 {
+        font-size: 33px;
+    }
+
+    .form-group input {
+        height: 48px;
+        font-size: 15px;
+    }
+
+    .login-btn {
+        height: 49px;
+    }
+
+}
+
+.login-error,
+.login-success {
+    padding: 12px 15px;
+    margin-bottom: 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.login-error {
+    background: #ffe5e5;
+    color: #c62828;
+    border: 1px solid #f5b5b5;
+}
+
+.login-success {
+    background: #e5f5e8;
+    color: #24743a;
+    border: 1px solid #b5dfbd;
+}

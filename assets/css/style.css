@@ -1,0 +1,467 @@
+
+/* ============================================
+   STUDYHIVE LANDING PAGE
+   Bee Creative Design
+============================================ */
+
+
+/* ============================================
+   1. GLOBAL SETTINGS
+============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    background: #ffffff;
+    color: #000000;
+
+    overflow-x: hidden;
+}
+
+
+/* ============================================
+   2. STUDYHIVE LOGO
+============================================ */
+
+.brand {
+    position: absolute;
+
+    top: 15px;
+    left: 40px;
+
+    display: block;
+
+    z-index: 10;
+}
+
+.brand img {
+    width: 85px;
+    height: 85px;
+
+    object-fit: contain;
+}
+
+
+/* ============================================
+   3. REMOVE NAVIGATION
+============================================ */
+
+.navbar,
+.nav-links,
+.menu-toggle {
+    display: none !important;
+}
+
+
+/* ============================================
+   4. HERO SECTION
+============================================ */
+
+.hero {
+    position: relative;
+
+    width: 100%;
+    height: 100vh;
+    min-height: 650px;
+
+    display: flex;
+    align-items: center;
+
+    overflow: hidden;
+
+    background: #ffffff;
+}
+
+
+/* ============================================
+   5. MAIN YELLOW BACKGROUND
+============================================ */
+
+.hero::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: 58%;
+    height: 86%;
+
+    background: #ffdb36;
+
+    border-radius: 10% 0 0 55%;
+
+    z-index: 0;
+}
+
+
+/* ============================================
+   6. PALE YELLOW BOTTOM LEFT BACKGROUND
+============================================ */
+
+.hero::after {
+    content: "";
+
+    position: absolute;
+
+    left: -15%;
+    bottom: -22%;
+
+    width: 65%;
+    height: 78%;
+
+    background: rgba(255, 235, 112, 0.68);
+
+    border-radius: 45% 55% 0 0;
+
+    transform: rotate(12deg);
+
+    z-index: 0;
+}
+
+
+/* ============================================
+   7. HERO TEXT CONTENT
+============================================ */
+
+.hero-content {
+    position: absolute;
+
+    left: 13.2%;
+    top: 29.8%;
+
+    width: 42%;
+
+    z-index: 3;
+}
+
+
+/* MAIN HEADING */
+
+.hero-content h1 {
+    font-family: Arial, Helvetica, sans-serif;
+
+    font-size: 78px;
+    font-weight: 700;
+
+    line-height: 1.02;
+
+    letter-spacing: -3px;
+
+    color: #000000;
+}
+
+
+/* TAGLINE */
+
+.tagline {
+    margin-top: 16px;
+
+    font-size: 23px;
+    font-weight: 400;
+
+    letter-spacing: 6px;
+
+    white-space: nowrap;
+
+    color: #000000;
+}
+
+
+/* ============================================
+   8. EXPLORE BUTTON
+============================================ */
+
+.explore-btn {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 295px;
+    height: 70px;
+
+    margin-top: 116px;
+
+    background: #6078ed;
+
+    color: #ffffff;
+
+    border-radius: 11px;
+
+    text-decoration: none;
+
+    font-size: 25px;
+    font-weight: 700;
+
+    transition: all 0.3s ease;
+}
+
+.explore-btn:hover {
+    background: #4c66db;
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 8px 18px rgba(69, 95, 213, 0.2);
+}
+
+
+/* ============================================
+   9. ILLUSTRATION CONTAINER
+============================================ */
+
+.hero-illustration {
+    position: absolute;
+
+    width: 42%;
+
+    right: 3%;
+    top: 27%;
+
+    z-index: 2;
+}
+
+
+/* ============================================
+   10. COMPLETE BEEHIVE IMAGE
+   Includes decorative small bees
+============================================ */
+
+.beehive-image {
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    object-fit: contain;
+}
+
+
+/* ============================================
+   11. FLOATING BEE IMAGE
+============================================ */
+
+.hero-bee {
+    position: absolute;
+
+    width: 18%;
+    height: auto;
+
+    top: -8%;
+    left: 15%;
+
+    object-fit: contain;
+
+    z-index: 3;
+}
+
+
+/* ============================================
+   12. TABLET RESPONSIVENESS
+============================================ */
+
+@media screen and (max-width: 1100px) {
+
+    .brand {
+        top: 12px;
+        left: 30px;
+    }
+
+    .brand img {
+        width: 75px;
+        height: 75px;
+    }
+
+    .hero-content {
+        left: 8%;
+        top: 31%;
+
+        width: 45%;
+    }
+
+    .hero-content h1 {
+        font-size: 62px;
+    }
+
+    .tagline {
+        font-size: 17px;
+        letter-spacing: 3px;
+    }
+
+    .explore-btn {
+        width: 230px;
+        height: 58px;
+
+        margin-top: 85px;
+
+        font-size: 21px;
+    }
+
+    .hero-illustration {
+        width: 43%;
+
+        right: 3%;
+        top: 31%;
+    }
+
+    .hero-bee {
+        width: 18%;
+    }
+
+}
+
+
+/* ============================================
+   13. MOBILE RESPONSIVENESS
+============================================ */
+
+@media screen and (max-width: 650px) {
+
+    .brand {
+        top: 10px;
+        left: 18px;
+    }
+
+    .brand img {
+        width: 70px;
+        height: 70px;
+    }
+
+    .hero {
+        height: auto;
+        min-height: 100vh;
+
+        display: flex;
+        flex-direction: column;
+
+        padding: 0 0 30px;
+    }
+
+
+    /* MOBILE BACKGROUND */
+
+    .hero::before {
+        width: 100%;
+        height: 55%;
+
+        top: 45%;
+        right: -15%;
+
+        border-radius: 45% 0 0 35%;
+    }
+
+    .hero::after {
+        width: 85%;
+        height: 40%;
+
+        left: -30%;
+        bottom: -15%;
+    }
+
+
+    /* MOBILE TEXT */
+
+    .hero-content {
+        position: relative;
+
+        top: auto;
+        left: auto;
+
+        width: 90%;
+
+        margin: 145px auto 0;
+
+        z-index: 3;
+    }
+
+    .hero-content h1 {
+        font-size: 60px;
+
+        line-height: 1;
+
+        letter-spacing: -3px;
+    }
+
+    .tagline {
+        font-size: 15px;
+
+        letter-spacing: 3px;
+
+        white-space: normal;
+    }
+
+    .explore-btn {
+        width: 210px;
+        height: 55px;
+
+        margin-top: 35px;
+
+        font-size: 20px;
+    }
+
+
+    /* MOBILE ILLUSTRATIONS */
+
+    .hero-illustration {
+        position: relative;
+
+        width: 85%;
+
+        top: auto;
+        right: auto;
+
+        margin: 45px auto 20px;
+    }
+
+    .hero-bee {
+        width: 20%;
+
+        top: -7%;
+        left: 17%;
+    }
+
+}
+
+
+/* ============================================
+   14. SMALL MOBILE SCREENS
+============================================ */
+
+@media screen and (max-width: 380px) {
+
+    .hero-content h1 {
+        font-size: 52px;
+    }
+
+    .tagline {
+        font-size: 13px;
+
+        letter-spacing: 2px;
+    }
+
+    .explore-btn {
+        width: 185px;
+        height: 50px;
+
+        font-size: 18px;
+    }
+
+    .hero-illustration {
+        width: 90%;
+    }
+
+}
