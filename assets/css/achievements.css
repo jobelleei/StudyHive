@@ -1,0 +1,592 @@
+/* =========================================
+   STUDYHIVE - ACHIEVEMENTS
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --blue: #6475f5;
+    --ink: #111111;
+    --muted: #888888;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #ffffff;
+    color: var(--ink);
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Shared StudyHive navigation sizing */
+.navbar {
+    width: 100%;
+    min-height: 115px;
+    padding: 15px 4%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    background: #ffffff;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    flex: 0 0 100px;
+}
+
+.brand img {
+    width: 85px;
+    height: 85px;
+    object-fit: contain;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 55px;
+    flex: 1;
+}
+
+.nav-links a {
+    position: relative;
+    padding: 15px 8px;
+    color: #111111;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.nav-links a.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 5px;
+    border-radius: 5px;
+    background: var(--blue);
+}
+
+.nav-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #555555;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.nav-user a {
+    color: var(--blue);
+    font-weight: 700;
+}
+
+/* Main page sizing aligned with the other StudyHive pages */
+.achievement-container {
+    width: 84%;
+    max-width: 1450px;
+    margin: 25px auto 75px;
+}
+
+.page-title {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 28px;
+}
+
+.page-title span {
+    color: #17108e;
+}
+
+.section-heading-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.section-heading-row h2 {
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.section-heading-row p {
+    margin-top: 6px;
+    color: #888888;
+    font-size: 13px;
+}
+
+.progress-section {
+    margin-bottom: 28px;
+}
+
+.period-filter select {
+    border: 1px solid #dddddd;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #222222;
+    background: #ffffff;
+    font-size: 13px;
+}
+
+/* Summary cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    width: 100%;
+}
+
+.stat-card {
+    padding: 22px 25px;
+    border-radius: 15px;
+    background: #f5f5f5;
+    min-height: 115px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-card span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #777777;
+}
+
+.stat-card strong {
+    display: block;
+    margin-top: 12px;
+    font-size: clamp(23px, 3vw, 36px);
+    font-weight: 500;
+    color: #4058ee;
+}
+
+/* Subject chart */
+.chart-section {
+    padding: 28px 30px 25px;
+    background: #f5f5f5;
+    border-radius: 17px;
+    margin-bottom: 42px;
+}
+
+.chart-unit,
+.today-date {
+    font-size: 12px;
+    color: #777777;
+    font-weight: 700;
+}
+
+.chart-list {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: clamp(12px, 2.2vw, 26px);
+    height: 255px;
+    margin-top: 25px;
+    padding: 10px 5px 0;
+    border-bottom: 1px solid #c9c9c9;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.chart-row {
+    flex: 1 0 65px;
+    min-width: 65px;
+    max-width: 120px;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 22px minmax(0, 1fr) 34px;
+    align-items: end;
+    justify-items: center;
+    gap: 5px;
+}
+
+.chart-value {
+    width: 100%;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #555555;
+    white-space: nowrap;
+}
+
+.chart-track {
+    width: min(100%, 76px);
+    height: 100%;
+    background: transparent;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 7px 7px 0 0;
+}
+
+.chart-bar {
+    display: block;
+    width: 100%;
+    min-height: 0;
+    border-radius: 7px 7px 0 0;
+    transition: height .45s ease;
+}
+
+.chart-folder-name {
+    width: 100%;
+    min-height: 30px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+/* Today's Achievabee */
+.achievabee-section {
+    margin-top: 42px;
+}
+
+.achievement-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 35px;
+}
+
+.achievement-card {
+    min-height: 100px;
+    border-radius: 23px;
+    padding: 15px 17px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+}
+
+.achievement-card.gold {
+    background: #ffefb6;
+}
+
+.achievement-card.pink {
+    background: #ffc8c8;
+}
+
+.trophy-badge {
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+    border: 5px solid #ffbd40;
+    background: #ffdf80;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a66a00;
+}
+
+.trophy-badge svg {
+    width: 29px;
+    height: 29px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.achievement-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.achievement-info h3 {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    padding-right: 5px;
+}
+
+.achievement-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px 14px;
+    margin-top: 9px;
+}
+
+.achievement-meta span {
+    font-size: 11px;
+    color: #333333;
+}
+
+.completed-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #47854a;
+    white-space: nowrap;
+}
+
+/* Empty states */
+.empty-state {
+    padding: 38px 20px;
+    text-align: center;
+    background: #f7f7f7;
+    border-radius: 15px;
+}
+
+.empty-state h3 {
+    font-size: 17px;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 13px;
+    color: #888888;
+    line-height: 1.6;
+}
+
+.start-button {
+    display: inline-block;
+    margin-top: 17px;
+    padding: 11px 20px;
+    border-radius: 8px;
+    background: #6475f5;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* =========================================
+   DARK MODE
+   Reads html[data-theme="dark"] set from
+   the shared StudyHive localStorage preference.
+========================================= */
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+}
+
+html[data-theme="dark"] body {
+    color: #eeeeee;
+    background: #171923;
+}
+
+/* Navigation */
+html[data-theme="dark"] .navbar {
+    background: #202331;
+}
+
+html[data-theme="dark"] .nav-links a,
+html[data-theme="dark"] .nav-user {
+    color: #eeeeee;
+}
+
+html[data-theme="dark"] .nav-user a {
+    color: #91a4ff;
+}
+
+html[data-theme="dark"] .nav-links a.active::after {
+    background: #8192ff;
+}
+
+/* Page heading and section headings */
+html[data-theme="dark"] .page-title {
+    color: #eeeeee;
+}
+
+html[data-theme="dark"] .page-title span {
+    color: #a9a5ff;
+}
+
+html[data-theme="dark"] .section-heading-row h2 {
+    color: #eeeeee;
+}
+
+html[data-theme="dark"] .section-heading-row p,
+html[data-theme="dark"] .chart-unit,
+html[data-theme="dark"] .today-date {
+    color: #aeb5c7;
+}
+
+/* Period selector */
+html[data-theme="dark"] .period-filter select {
+    color: #eeeeee;
+    background: #252a3a;
+    border-color: #4a5167;
+}
+
+/* Summary cards */
+html[data-theme="dark"] .stat-card {
+    background: #252a3a;
+}
+
+html[data-theme="dark"] .stat-card span {
+    color: #b9c0d1;
+}
+
+html[data-theme="dark"] .stat-card strong {
+    color: #91a4ff;
+}
+
+/* Chart */
+html[data-theme="dark"] .chart-section {
+    background: #252a3a;
+}
+
+html[data-theme="dark"] .chart-value,
+html[data-theme="dark"] .chart-folder-name {
+    color: #e2e6f0;
+}
+
+html[data-theme="dark"] .chart-list {
+    border-bottom-color: #4a5167;
+}
+
+/* Keep the gold and pink achievement cards colorful,
+   while improving text contrast in dark mode. */
+html[data-theme="dark"] .achievement-card.gold {
+    background: #514321;
+}
+
+html[data-theme="dark"] .achievement-card.pink {
+    background: #512f3b;
+}
+
+html[data-theme="dark"] .achievement-info h3 {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .achievement-meta span {
+    color: #f0e8e8;
+}
+
+html[data-theme="dark"] .completed-label {
+    color: #a9edbd;
+}
+
+/* Empty states */
+html[data-theme="dark"] .empty-state {
+    color: #eeeeee;
+    background: #252a3a;
+}
+
+html[data-theme="dark"] .empty-state h3 {
+    color: #eeeeee;
+}
+
+html[data-theme="dark"] .empty-state p {
+    color: #b9c0d1;
+}
+
+html[data-theme="dark"] .start-button {
+    background: #647cf5;
+    color: #ffffff;
+}
+
+/* Responsive layout */
+@media (max-width: 1100px) {
+    .achievement-container {
+        width: 90%;
+    }
+
+    .nav-links {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 850px) {
+    .navbar {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px 5%;
+    }
+
+    .brand {
+        flex-basis: 65px;
+    }
+
+    .brand img {
+        width: 65px;
+        height: 65px;
+    }
+
+    .nav-links {
+        order: 3;
+        width: 100%;
+        flex-basis: 100%;
+        justify-content: space-between;
+        gap: 12px;
+        overflow-x: auto;
+    }
+
+    .nav-links a {
+        font-size: 10px;
+    }
+
+    .nav-user {
+        margin-left: auto;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .achievement-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .achievement-container {
+        width: 90%;
+        margin-top: 18px;
+    }
+
+    .page-title {
+        font-size: 26px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-section {
+        padding: 20px 14px;
+    }
+
+    .chart-list {
+        height: 230px;
+        gap: 12px;
+    }
+
+    .chart-row {
+        flex-basis: 65px;
+    }
+
+    .chart-folder-name,
+    .chart-value {
+        font-size: 10px;
+    }
+
+    .section-heading-row h2 {
+        font-size: 19px;
+    }
+
+    .achievement-card {
+        padding: 12px;
+    }
+
+    .completed-label {
+        display: none;
+    }
+}

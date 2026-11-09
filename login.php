@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $_SESSION["email"] = $user["email"];
 
                 // Redirect to Notes dashboard
-                header("Location: notes.php");
+                header("Location: pages/notes.php");
                 exit;
 
             } else {
@@ -153,17 +153,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                         <input type="password" id="password" name="password" placeholder="Enter your password"
                             autocomplete="current-password" required>
-
-                    </div>
-
-                    <!-- REMEMBER ME -->
-                    <div class="remember-group">
-
-                        <input type="checkbox" id="remember" name="remember" value="1">
-
-                        <label for="remember">
-                            REMEMBER ME!
-                        </label>
 
                     </div>
 

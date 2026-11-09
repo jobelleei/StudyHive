@@ -1,13 +1,22 @@
 <?php
 session_start();
+
+// Prevent protected pages from being stored in browser cache.
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: 0");
+
 date_default_timezone_set("Asia/Manila");
 
 require_once __DIR__ . "/../config/database.php";
 
+// Check if the user is logged in.
 if (!isset($_SESSION["user_id"])) {
     header("Location: ../login.php");
     exit;
 }
+
 
 $user_id = (int)$_SESSION["user_id"];
 $first_name = $_SESSION["first_name"] ?? "Bee";
@@ -58,16 +67,7 @@ if (!in_array($period, ["today", "week", "month"], true)) {
 
 $error = "";
 $success = "";
-$note_colors = [
-    "#FFF2CC", // Soft yellow
-    "#FADADD", // Soft pink
-    "#DDEBFF", // Soft blue
-    "#DDF5E3", // Soft green
-    "#E9DDFB", // Soft purple
-    "#FFE5CC", // Soft orange
-    "#FCE4EC", // Light rose
-    "#E0F2F1"  // Soft teal
-];
+
 
 // =====================================================
 // HANDLE FORM SUBMISSIONS
@@ -85,6 +85,61 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $action = $_POST["action"] ?? "";
 
     try {
+
+        // SAVE A COMPLETED POMODORO FOCUS SESSION
+        if ($action === "save_pomodoro_session") {
+
+            header("Content-Type: application/json; charset=utf-8");
+
+            $focus_minutes = (int)($_POST["focus_minutes"] ?? 0);
+            $break_minutes = (int)($_POST["break_minutes"] ?? 0);
+            $folder_id = (int)($_POST["folder_id"] ?? 0);
+            $note_id = (int)($_POST["note_id"] ?? 0);
+
+            if (
+                $focus_minutes < 1 || $focus_minutes > 180 ||
+                $break_minutes < 1 || $break_minutes > 60 ||
+                $folder_id < 1
+            ) {
+                http_response_code(400);
+                echo json_encode(["success" => false, "message" => "Invalid session information."]);
+                exit;
+            }
+
+            // Ensure the selected folder belongs to this user.
+            $stmt = $pdo->prepare("SELECT folder_id FROM folders WHERE folder_id = ? AND user_id = ?");
+            $stmt->execute([$folder_id, $user_id]);
+            if (!$stmt->fetch()) {
+                http_response_code(403);
+                echo json_encode(["success" => false, "message" => "Invalid folder."]);
+                exit;
+            }
+
+            // A note is optional, but if supplied it must belong to this folder and user.
+            if ($note_id > 0) {
+                $stmt = $pdo->prepare(
+                    "SELECT note_id FROM notes WHERE note_id = ? AND folder_id = ? AND user_id = ?"
+                );
+                $stmt->execute([$note_id, $folder_id, $user_id]);
+                if (!$stmt->fetch()) {
+                    http_response_code(403);
+                    echo json_encode(["success" => false, "message" => "Invalid note."]);
+                    exit;
+                }
+            } else {
+                $note_id = null;
+            }
+
+            $stmt = $pdo->prepare(
+                "INSERT INTO pomodoro_sessions
+                    (user_id, folder_id, note_id, focus_minutes, break_minutes)
+                 VALUES (?, ?, ?, ?, ?)"
+            );
+            $stmt->execute([$user_id, $folder_id, $note_id, $focus_minutes, $break_minutes]);
+
+            echo json_encode(["success" => true, "message" => "Focus session recorded."]);
+            exit;
+        }
 
         // CREATE FOLDER
         if ($action === "create_folder") {
@@ -131,11 +186,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $folder_id = (int)($_POST["folder_id"] ?? 0);
             $title = trim($_POST["title"] ?? "");
             $content = cleanNoteHtml($_POST["content"] ?? "");
-            $note_color = $_POST["note_color"] ?? "#FFF2CC";
-
-            if (!in_array($note_color, $note_colors, true)) {
-                $note_color = "#FFF2CC";
-            }
+            $note_color = "#FFF2CC";
 
             $check = $pdo->prepare(
                 "SELECT folder_id
@@ -154,8 +205,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
 
                 $stmt = $pdo->prepare(
-                    "INSERT INTO notes (user_id, folder_id, title, content, note_color)
-                    VALUES (?, ?, ?, ?, ?)"
+                    "INSERT INTO notes
+                     (user_id, folder_id, title, content, note_color)
+                     VALUES (?, ?, ?, ?, ?)"
                 );
 
                 $stmt->execute([
@@ -179,11 +231,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $folder_id = (int)($_POST["folder_id"] ?? 0);
             $title = trim($_POST["title"] ?? "");
             $content = cleanNoteHtml($_POST["content"] ?? "");
-            $note_color = $_POST["note_color"] ?? "#FFF2CC";
-
-            if (!in_array($note_color, $note_colors, true)) {
-                $note_color = "#FFF2CC";
-            }
 
             if ($title === "") {
                 $error = "Please enter a note title.";
@@ -193,16 +240,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 $stmt = $pdo->prepare(
                     "UPDATE notes
-                    SET title = ?, content = ?, note_color = ?
-                    WHERE note_id = ?
-                    AND user_id = ?
-                    AND folder_id = ?"
+                     SET title = ?, content = ?
+                     WHERE note_id = ?
+                       AND user_id = ?
+                       AND folder_id = ?"
                 );
 
                 $stmt->execute([
                     $title,
                     $content,
-                    $note_color,
                     $note_id,
                     $user_id,
                     $folder_id
@@ -245,6 +291,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     } catch (PDOException $ex) {
         error_log("StudyHive Notes Error: " . $ex->getMessage());
+
+        if ($action === "save_pomodoro_session") {
+            http_response_code(500);
+            header("Content-Type: application/json; charset=utf-8");
+            echo json_encode([
+                "success" => false,
+                "message" => "Unable to save the focus session."
+            ]);
+            exit;
+        }
+
         $error = "Something went wrong while saving. Please check your database structure.";
     }
 }
@@ -427,7 +484,6 @@ if (!$editor_mode && !$selected_folder) {
     $stmt->execute([$user_id, $user_id]);
     $recent_notes = $stmt->fetchAll();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -440,7 +496,31 @@ if (!$editor_mode && !$selected_folder) {
     <title>My Notes | StudyHive</title>
 
     <link rel="icon" type="image/png" href="../assets/images/logo.png">
-    <link rel="stylesheet" href="../assets/css/notes.css">
+    <script>
+    (function() {
+        try {
+            let theme = localStorage.getItem("studyhiveTheme");
+
+            if (theme) {
+                try {
+                    theme = JSON.parse(theme);
+                } catch (error) {
+                    // Supports older plain-text theme values.
+                }
+            }
+
+            if (theme !== "dark" && theme !== "light") {
+                theme = "light";
+            }
+
+            document.documentElement.setAttribute("data-theme", theme);
+        } catch (error) {
+            document.documentElement.setAttribute("data-theme", "light");
+        }
+    })();
+    </script>
+    <link rel="stylesheet" href="../assets/css/notes.css?v=achievements1">
+    <link rel="stylesheet" href="../assets/css/settings-modal.css?v=3">
 </head>
 
 <body>
@@ -456,11 +536,11 @@ if (!$editor_mode && !$selected_folder) {
             <a href="calendar.php">CALENDAR</a>
             <a href="achievements.php">ACHIEVEMENTS</a>
             <a href="feed.php">FEED</a>
-            <a href="settings.php">SETTINGS</a>
+            <a href="#" data-open-settings>SETTINGS</a>
         </nav>
 
         <div class="nav-user">
-            <span>Hi, <?= e($first_name) ?>!</span>
+            <span>Hi, <span data-user-name><?= e($first_name) ?></span>!</span>
             <a href="../logout.php">LOG OUT</a>
         </div>
 
@@ -476,7 +556,6 @@ if (!$editor_mode && !$selected_folder) {
         <div class="message success-message"><?= e($success) ?></div>
         <?php endif; ?>
 
-
         <?php if ($editor_mode): ?>
 
         <a href="notes.php?folder=<?= (int)$selected_folder["folder_id"] ?>" class="back-link">
@@ -488,9 +567,7 @@ if (!$editor_mode && !$selected_folder) {
             <form method="POST" id="noteForm">
 
                 <input type="hidden" name="csrf_token" value="<?= e($_SESSION["csrf_token"]) ?>">
-
                 <input type="hidden" name="action" value="<?= $is_editing ? "update_note" : "create_note" ?>">
-
                 <input type="hidden" name="folder_id" value="<?= (int)$selected_folder["folder_id"] ?>">
 
                 <?php if ($is_editing): ?>
@@ -499,7 +576,6 @@ if (!$editor_mode && !$selected_folder) {
 
                 <input type="hidden" name="content" id="savedContent">
 
-
                 <!-- TOOLBAR -->
 
                 <div class="editor-toolbar">
@@ -507,73 +583,48 @@ if (!$editor_mode && !$selected_folder) {
                     <div class="toolbar-group">
 
                         <button type="button" class="toolbar-button" data-command="undo" title="Undo">
-
                             <svg viewBox="0 0 24 24">
                                 <path d="M9 14 4 9l5-5" />
                                 <path d="M4 9h10a6 6 0 0 1 0 12h-2" />
                             </svg>
-
                         </button>
 
                         <button type="button" class="toolbar-button" data-command="redo" title="Redo">
-
                             <svg viewBox="0 0 24 24">
                                 <path d="m15 14 5-5-5-5" />
                                 <path d="M20 9H10a6 6 0 0 0 0 12h2" />
                             </svg>
-
                         </button>
 
                     </div>
 
                     <div class="toolbar-divider"></div>
 
-
-                    <!-- FONT FAMILY -->
-
                     <div class="toolbar-group">
 
                         <select class="toolbar-select" id="fontFamily" title="Font family">
-
                             <option value="Arial">Arial</option>
                             <option value="Times New Roman" selected>Times New Roman</option>
                             <option value="Georgia">Georgia</option>
                             <option value="Verdana">Verdana</option>
                             <option value="Tahoma">Tahoma</option>
                             <option value="Courier New">Courier New</option>
-
                         </select>
 
-
-                        <!-- DECREASE FONT SIZE -->
-
                         <button type="button" class="toolbar-button size-button" id="fontDecrease"
-                            title="Decrease font size">
-                            −
-                        </button>
-
-
-                        <!-- TYPEABLE FONT SIZE -->
+                            title="Decrease font size">−</button>
 
                         <input type="number" id="fontSize" class="font-size-input" value="12" min="1" max="200" step="1"
                             title="Enter font size in pixels" aria-label="Font size in pixels">
 
                         <span class="font-size-unit">px</span>
 
-
-                        <!-- INCREASE FONT SIZE -->
-
                         <button type="button" class="toolbar-button size-button" id="fontIncrease"
-                            title="Increase font size">
-                            +
-                        </button>
+                            title="Increase font size">+</button>
 
                     </div>
 
                     <div class="toolbar-divider"></div>
-
-
-                    <!-- TEXT FORMATTING -->
 
                     <div class="toolbar-group">
 
@@ -581,14 +632,11 @@ if (!$editor_mode && !$selected_folder) {
                             <b>B</b>
                         </button>
 
-                        <button type="button" class="toolbar-button italic-button" data-command="italic" title="Italic">
-                            I
-                        </button>
+                        <button type="button" class="toolbar-button italic-button" data-command="italic"
+                            title="Italic">I</button>
 
                         <button type="button" class="toolbar-button underline-button" data-command="underline"
-                            title="Underline">
-                            U
-                        </button>
+                            title="Underline">U</button>
 
                         <label class="color-control" title="Text color">
                             A
@@ -596,22 +644,16 @@ if (!$editor_mode && !$selected_folder) {
                         </label>
 
                         <label class="color-control highlight-control" title="Highlight color">
-
                             <svg viewBox="0 0 24 24">
                                 <path d="m14 4 6 6-9 9H5v-6l9-9Z" />
                                 <path d="m12 6 6 6M4 21h16" />
                             </svg>
-
                             <input type="color" id="highlightColor" value="#ffe58a">
-
                         </label>
 
                     </div>
 
                     <div class="toolbar-divider"></div>
-
-
-                    <!-- ALIGNMENT AND BULLETS -->
 
                     <div class="toolbar-group">
 
@@ -649,13 +691,9 @@ if (!$editor_mode && !$selected_folder) {
 
                 </div>
 
-
                 <!-- EDITOR BODY -->
 
                 <div class="editor-body">
-
-
-                    <!-- DYNAMIC NOTE TABS -->
 
                     <div class="editor-tabs">
 
@@ -671,45 +709,14 @@ if (!$editor_mode && !$selected_folder) {
 
                         <?php endforeach; ?>
 
-
                         <a href="notes.php?create=<?= (int)$selected_folder["folder_id"] ?>"
                             class="editor-tab add-note-tab" title="Create another note">
-
                             <span>+</span>
-
                         </a>
 
                     </div>
 
-
-                    <!-- MAIN WRITING AREA -->
-
                     <div class="editor-main">
-
-                        <?php
-    $current_note_color = $is_editing
-        ? ($edit_note["note_color"] ?? "#FFF2CC")
-        : "#FFF2CC";
-
-    if (!in_array($current_note_color, $note_colors, true)) {
-        $current_note_color = "#FFF2CC";
-    }
-    ?>
-
-                        <div class="note-color-picker">
-                            <span>NOTE COLOR</span>
-
-                            <div class="note-color-options">
-                                <?php foreach ($note_colors as $color): ?>
-                                <label title="<?= e($color) ?>">
-                                    <input type="radio" name="note_color" value="<?= e($color) ?>"
-                                        <?= $current_note_color === $color ? "checked" : "" ?>>
-                                    <span style="background: <?= e($color) ?>"></span>
-                                </label>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-
                         <input type="text" class="editor-title" name="title" maxlength="255" placeholder="Title..."
                             value="<?= e($editor_title) ?>" required>
 
@@ -717,7 +724,6 @@ if (!$editor_mode && !$selected_folder) {
                             data-placeholder="Write here..."><?= cleanNoteHtml($editor_content) ?></div>
 
                     </div>
-
 
                     <!-- RIGHT SIDEBAR -->
 
@@ -728,22 +734,17 @@ if (!$editor_mode && !$selected_folder) {
                             <div class="search-input-wrapper">
 
                                 <svg viewBox="0 0 24 24" class="sidebar-search-icon">
-
                                     <circle cx="10.8" cy="10.8" r="7" />
                                     <path d="m16 16 5 5" />
-
                                 </svg>
 
                                 <input type="search" id="editorSearch" placeholder="Search in note...">
 
                             </div>
 
-                            <p class="search-hint">
-                                Press Enter to find text
-                            </p>
+                            <p class="search-hint">Press Enter to find text</p>
 
                         </div>
-
 
                         <div class="todo-panel">
 
@@ -755,16 +756,13 @@ if (!$editor_mode && !$selected_folder) {
                                 </div>
 
                                 <svg viewBox="0 0 24 24" class="todo-heading-icon">
-
                                     <path d="M9 5h11M9 12h11M9 19h11" />
                                     <path d="m3 5 1.5 1.5L7 4" />
                                     <path d="m3 12 1.5 1.5L7 11" />
                                     <path d="m3 19 1.5 1.5L7 18" />
-
                                 </svg>
 
                             </div>
-
 
                             <div class="todo-progress">
                                 <div class="todo-progress-bar" id="todoProgressBar"></div>
@@ -774,18 +772,11 @@ if (!$editor_mode && !$selected_folder) {
                                 0 tasks completed
                             </div>
 
-
                             <div class="todo-list" id="todoList"></div>
 
-
                             <div class="todo-add">
-
                                 <input type="text" id="todoInput" placeholder="Add a task...">
-
-                                <button type="button" id="addTodoButton" aria-label="Add task">
-                                    +
-                                </button>
-
+                                <button type="button" id="addTodoButton" aria-label="Add task">+</button>
                             </div>
 
                         </div>
@@ -794,14 +785,12 @@ if (!$editor_mode && !$selected_folder) {
 
                 </div>
 
-
                 <!-- EDITOR ACTIONS -->
 
                 <div class="editor-actions">
 
-                    <a href="notes.php?folder=<?= (int)$selected_folder["folder_id"] ?>" class="cancel-button">
-                        CANCEL
-                    </a>
+                    <a href="notes.php?folder=<?= (int)$selected_folder["folder_id"] ?>"
+                        class="cancel-button">CANCEL</a>
 
                     <button type="submit" class="create-button">
                         <?= $is_editing ? "SAVE CHANGES" : "SAVE NOTE" ?>
@@ -811,30 +800,23 @@ if (!$editor_mode && !$selected_folder) {
 
             </form>
 
-
             <?php if ($is_editing): ?>
 
             <form method="POST" class="delete-current-note"
                 onsubmit="return confirm('Are you sure you want to delete this note?');">
 
                 <input type="hidden" name="csrf_token" value="<?= e($_SESSION["csrf_token"]) ?>">
-
                 <input type="hidden" name="action" value="delete_note">
-
                 <input type="hidden" name="note_id" value="<?= (int)$edit_note["note_id"] ?>">
-
                 <input type="hidden" name="folder_id" value="<?= (int)$selected_folder["folder_id"] ?>">
 
-                <button type="submit" class="delete-button">
-                    DELETE THIS NOTE
-                </button>
+                <button type="submit" class="delete-button">DELETE THIS NOTE</button>
 
             </form>
 
             <?php endif; ?>
 
         </div>
-
 
         <?php elseif ($selected_folder): ?>
 
@@ -852,7 +834,6 @@ if (!$editor_mode && !$selected_folder) {
             </a>
 
         </div>
-
 
         <div class="folder-note-list">
 
@@ -876,11 +857,9 @@ if (!$editor_mode && !$selected_folder) {
                 </div>
 
                 <div class="note-item-actions">
-
                     <a href="notes.php?edit=<?= (int)$note["note_id"] ?>">
                         OPEN / EDIT
                     </a>
-
                 </div>
 
             </article>
@@ -891,25 +870,18 @@ if (!$editor_mode && !$selected_folder) {
 
         </div>
 
-
         <form method="POST" class="delete-folder-form"
             onsubmit="return confirm('Delete this folder and all its notes?');">
 
             <input type="hidden" name="csrf_token" value="<?= e($_SESSION["csrf_token"]) ?>">
-
             <input type="hidden" name="action" value="delete_folder">
-
             <input type="hidden" name="folder_id" value="<?= (int)$selected_folder["folder_id"] ?>">
 
-            <button type="submit" class="delete-button">
-                DELETE FOLDER
-            </button>
+            <button type="submit" class="delete-button">DELETE FOLDER</button>
 
         </form>
 
-
         <?php else: ?>
-
         <!-- NOTES DASHBOARD -->
 
         <div class="section-heading">
@@ -929,23 +901,15 @@ if (!$editor_mode && !$selected_folder) {
 
         </div>
 
-
         <div class="filters">
 
-            <a href="notes.php?period=today" class="<?= $period === "today" ? "filter-active" : "" ?>">
-                Today
-            </a>
+            <a href="notes.php?period=today" class="<?= $period === "today" ? "filter-active" : "" ?>">Today</a>
 
-            <a href="notes.php?period=week" class="<?= $period === "week" ? "filter-active" : "" ?>">
-                This week
-            </a>
+            <a href="notes.php?period=week" class="<?= $period === "week" ? "filter-active" : "" ?>">This week</a>
 
-            <a href="notes.php?period=month" class="<?= $period === "month" ? "filter-active" : "" ?>">
-                This month
-            </a>
+            <a href="notes.php?period=month" class="<?= $period === "month" ? "filter-active" : "" ?>">This month</a>
 
         </div>
-
 
         <div class="folder-header">
 
@@ -957,13 +921,11 @@ if (!$editor_mode && !$selected_folder) {
 
         </div>
 
-
         <form method="POST" class="form-panel" id="folderForm" hidden>
 
             <h3>Create a new folder</h3>
 
             <input type="hidden" name="csrf_token" value="<?= e($_SESSION["csrf_token"]) ?>">
-
             <input type="hidden" name="action" value="create_folder">
 
             <div class="form-group">
@@ -975,7 +937,6 @@ if (!$editor_mode && !$selected_folder) {
 
             </div>
 
-
             <div class="form-group">
 
                 <label>CHOOSE FOLDER COLOR</label>
@@ -983,24 +944,21 @@ if (!$editor_mode && !$selected_folder) {
                 <div class="color-options">
 
                     <?php
-                    $colors = [
-                        "#5298E8",
-                        "#F15B5B",
-                        "#F6AD55",
-                        "#9B83D5",
-                        "#48B99A"
-                    ];
+                        $colors = [
+                            "#5298E8",
+                            "#F15B5B",
+                            "#F6AD55",
+                            "#9B83D5",
+                            "#48B99A"
+                        ];
 
-                    foreach ($colors as $index => $color):
-                    ?>
+                        foreach ($colors as $index => $color):
+                        ?>
 
                     <label>
-
-                        <input type="radio" name="folder_color" value="<?= $color ?>"
+                        <input type="radio" name="folder_color" value="<?= e($color) ?>"
                             <?= $index === 0 ? "checked" : "" ?>>
-
-                        <span class="color-dot" style="background:<?= $color ?>"></span>
-
+                        <span class="color-dot" style="background:<?= e($color) ?>"></span>
                     </label>
 
                     <?php endforeach; ?>
@@ -1009,12 +967,9 @@ if (!$editor_mode && !$selected_folder) {
 
             </div>
 
-
             <div class="form-actions">
 
-                <button type="submit" class="create-button">
-                    SAVE FOLDER
-                </button>
+                <button type="submit" class="create-button">SAVE FOLDER</button>
 
                 <button type="button" class="cancel-button" id="cancelFolderForm">
                     CANCEL
@@ -1023,7 +978,6 @@ if (!$editor_mode && !$selected_folder) {
             </div>
 
         </form>
-
 
         <div class="folder-grid" id="folderGrid">
 
@@ -1065,7 +1019,6 @@ if (!$editor_mode && !$selected_folder) {
 
         </div>
 
-
         <!-- RECENT WORKS -->
 
         <section class="recent-section">
@@ -1078,17 +1031,14 @@ if (!$editor_mode && !$selected_folder) {
 
                     <div class="recent-filters">
 
-                        <a href="notes.php?period=today" class="<?= $period === "today" ? "filter-active" : "" ?>">
-                            Today
-                        </a>
+                        <a href="notes.php?period=today"
+                            class="<?= $period === "today" ? "filter-active" : "" ?>">Today</a>
 
-                        <a href="notes.php?period=week" class="<?= $period === "week" ? "filter-active" : "" ?>">
-                            This week
-                        </a>
+                        <a href="notes.php?period=week" class="<?= $period === "week" ? "filter-active" : "" ?>">This
+                            week</a>
 
-                        <a href="notes.php?period=month" class="<?= $period === "month" ? "filter-active" : "" ?>">
-                            This month
-                        </a>
+                        <a href="notes.php?period=month" class="<?= $period === "month" ? "filter-active" : "" ?>">This
+                            month</a>
 
                     </div>
 
@@ -1097,7 +1047,6 @@ if (!$editor_mode && !$selected_folder) {
                 </div>
 
             </div>
-
 
             <div class="notes-grid" id="notesGrid">
 
@@ -1115,9 +1064,7 @@ if (!$editor_mode && !$selected_folder) {
                 <a href="notes.php?edit=<?= (int)$note["note_id"] ?>" class="note-card searchable"
                     style="background:<?= e($note["folder_color"]) ?>">
 
-                    <h3 class="note-title">
-                        <?= e($note["title"]) ?>
-                    </h3>
+                    <h3 class="note-title"><?= e($note["title"]) ?></h3>
 
                     <div class="note-preview">
                         <?= cleanNoteHtml($note["content"] ?? "") ?>
@@ -1140,10 +1087,138 @@ if (!$editor_mode && !$selected_folder) {
 
         <?php endif; ?>
 
+
+        <!-- =================================================
+             FLOATING POMODORO TIMER
+        ================================================== -->
+
+        <?php if ($editor_mode): ?>
+
+        <button type="button" id="pomodoroToggle" class="pomodoro-toggle" aria-expanded="false"
+            aria-controls="pomodoroPanel" data-csrf="<?= e($_SESSION["csrf_token"]) ?>"
+            data-folder-id="<?= (int)$selected_folder["folder_id"] ?>"
+            data-note-id="<?= $is_editing ? (int)$edit_note["note_id"] : 0 ?>">
+
+            <span class="timer-icon" aria-hidden="true">◷</span>
+            <span>FOCUS TIMER</span>
+
+        </button>
+
+        <section class="pomodoro-panel" id="pomodoroPanel" aria-label="Pomodoro timer" hidden>
+
+            <div class="pomodoro-header">
+
+                <div>
+                    <span class="pomodoro-eyebrow">STUDYHIVE PRODUCTIVITY</span>
+                    <h2>Pomodoro Timer</h2>
+                </div>
+
+                <button type="button" id="pomodoroClose" class="pomodoro-close"
+                    aria-label="Close timer">&times;</button>
+
+            </div>
+
+            <div class="pomodoro-tabs">
+
+                <button type="button" class="pomodoro-tab active" data-mode="focus">
+                    FOCUS
+                </button>
+
+                <button type="button" class="pomodoro-tab" data-mode="break">
+                    BREAK
+                </button>
+
+            </div>
+
+            <div class="pomodoro-circle" id="pomodoroCircle">
+
+                <div class="pomodoro-time-content">
+
+                    <span class="pomodoro-mode-label" id="pomodoroModeLabel">
+                        FOCUS TIME
+                    </span>
+
+                    <h1 id="pomodoroDisplay">25:00</h1>
+
+                    <span class="pomodoro-status" id="pomodoroStatus">
+                        Ready to focus?
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="pomodoro-controls">
+
+                <button type="button" id="pomodoroReset" class="pomodoro-secondary">
+                    RESET
+                </button>
+
+                <button type="button" id="pomodoroStart" class="pomodoro-start">
+                    START
+                </button>
+
+                <button type="button" id="pomodoroSkip" class="pomodoro-secondary">
+                    SKIP
+                </button>
+
+            </div>
+
+            <div class="pomodoro-settings">
+
+                <div class="pomodoro-settings-heading">
+                    <h3>Timer Settings</h3>
+                    <span>Customize your sessions</span>
+                </div>
+
+                <div class="pomodoro-setting-fields">
+
+                    <div class="pomodoro-setting">
+
+                        <label for="focusDuration">Focus length</label>
+
+                        <div class="pomodoro-number-input">
+                            <input type="number" id="focusDuration" min="1" max="180" value="25">
+                            <span>min</span>
+                        </div>
+
+                    </div>
+
+                    <div class="pomodoro-setting">
+
+                        <label for="breakDuration">Break length</label>
+
+                        <div class="pomodoro-number-input">
+                            <input type="number" id="breakDuration" min="1" max="60" value="5">
+                            <span>min</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <button type="button" id="pomodoroSaveSettings" class="pomodoro-save-settings">
+                    SAVE SETTINGS
+                </button>
+
+            </div>
+
+            <p class="pomodoro-session-count">
+                Completed focus sessions:
+                <strong id="pomodoroSessions">0</strong>
+            </p>
+
+        </section>
+
+        <?php endif; ?>
+
     </main>
 
-    <script src="../assets/js/notes.js"></script>
+    <script src="../assets/js/notes.js?v=pomodoro3"></script>
 
+
+    <?php include __DIR__ . "/includes/settings_modal.php"; ?>
+    <script src="../assets/js/settings.js?v=3"></script>
 </body>
 
 </html>

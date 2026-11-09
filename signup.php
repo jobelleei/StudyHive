@@ -157,14 +157,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             minlength="6" autocomplete="new-password" required>
                     </div>
 
-                    <div class="remember-group">
-                        <input type="checkbox" id="remember" name="remember" value="1">
-
-                        <label for="remember">
-                            REMEMBER ME!
-                        </label>
-                    </div>
-
                     <button type="submit" class="signup-btn">
                         SIGN UP
                     </button>

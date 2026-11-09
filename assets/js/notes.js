@@ -1,661 +1,514 @@
+/* =====================================================
+   POMODORO TIMER
+===================================================== */
 
 document.addEventListener("DOMContentLoaded", function () {
-    const editor = document.getElementById("noteEditor");
 
-    initializeDashboard();
+    // Folder form controls must initialize even on the dashboard,
+    // where the Pomodoro timer is not rendered.
+    const showFolderFormButton = document.getElementById("showFolderForm");
+    const folderForm = document.getElementById("folderForm");
+    const cancelFolderFormButton = document.getElementById("cancelFolderForm");
 
-    if (!editor) return;
-
-    // ==========================================
-    // EDITOR SELECTION
-    // ==========================================
-
-    let savedRange = null;
-
-    function saveSelection() {
-        const selection = window.getSelection();
-
-        if (!selection || selection.rangeCount === 0) return;
-
-        const range = selection.getRangeAt(0);
-
-        if (editor.contains(range.commonAncestorContainer)) {
-            savedRange = range.cloneRange();
-        }
+    if (showFolderFormButton && folderForm) {
+        showFolderFormButton.addEventListener("click", function () {
+            folderForm.hidden = !folderForm.hidden;
+            if (!folderForm.hidden) {
+                const nameInput = document.getElementById("folder_name");
+                if (nameInput) nameInput.focus();
+            }
+        });
     }
 
-    function restoreSelection() {
-        editor.focus();
+    if (cancelFolderFormButton && folderForm) {
+        cancelFolderFormButton.addEventListener("click", function () {
+            folderForm.hidden = true;
+            folderForm.reset();
+        });
+    }
 
-        if (!savedRange) return false;
+    const toggle = document.getElementById("pomodoroToggle");
+    const panel = document.getElementById("pomodoroPanel");
 
+    if (!toggle || !panel) return;
+
+    const closeButton = document.getElementById("pomodoroClose");
+    const display = document.getElementById("pomodoroDisplay");
+    const modeLabel = document.getElementById("pomodoroModeLabel");
+    const statusLabel = document.getElementById("pomodoroStatus");
+    const startButton = document.getElementById("pomodoroStart");
+    const resetButton = document.getElementById("pomodoroReset");
+    const skipButton = document.getElementById("pomodoroSkip");
+    const focusInput = document.getElementById("focusDuration");
+    const breakInput = document.getElementById("breakDuration");
+    const saveSettingsButton = document.getElementById("pomodoroSaveSettings");
+    const sessionsDisplay = document.getElementById("pomodoroSessions");
+    const circle = document.getElementById("pomodoroCircle");
+    const tabs = document.querySelectorAll(".pomodoro-tab");
+
+    const STORAGE_KEY = "studyhivePomodoroSettings";
+    const STATE_KEY = "studyhivePomodoroState";
+
+    function readStorage(key, fallback) {
         try {
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(savedRange);
-            return true;
+            const value = localStorage.getItem(key);
+            return value ? JSON.parse(value) : fallback;
         } catch (error) {
-            return false;
+            return fallback;
         }
     }
 
-    editor.addEventListener("mouseup", saveSelection);
-    editor.addEventListener("keyup", saveSelection);
-    editor.addEventListener("input", saveSelection);
-
-    document.addEventListener("selectionchange", function () {
-        const selection = window.getSelection();
-
-        if (
-            selection &&
-            selection.rangeCount > 0 &&
-            editor.contains(selection.getRangeAt(0).commonAncestorContainer)
-        ) {
-            saveSelection();
+    function saveStorage(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (error) {
+            // Timer remains usable if storage is unavailable.
         }
-    });
-
-    // ==========================================
-    // UNDO AND REDO
-    // ==========================================
-
-    let history = [editor.innerHTML];
-    let historyIndex = 0;
-    let historyTimer;
-
-    function updateHistoryButtons() {
-        const undo = document.querySelector('[data-command="undo"]');
-        const redo = document.querySelector('[data-command="redo"]');
-
-        if (undo) undo.disabled = historyIndex <= 0;
-        if (redo) redo.disabled = historyIndex >= history.length - 1;
     }
 
-    function saveHistory() {
-        clearTimeout(historyTimer);
+    const savedSettings = readStorage(STORAGE_KEY, {});
+    const savedState = readStorage(STATE_KEY, {});
 
-        historyTimer = setTimeout(function () {
-            const currentContent = editor.innerHTML;
+    let focusMinutes = Number(savedSettings.focusMinutes) || 25;
+    let breakMinutes = Number(savedSettings.breakMinutes) || 5;
+    let completedSessions = Number(savedState.completedSessions) || 0;
 
-            if (history[historyIndex] === currentContent) return;
+    let mode = savedState.mode === "break" ? "break" : "focus";
 
-            history = history.slice(0, historyIndex + 1);
-            history.push(currentContent);
+    let remainingSeconds = Number.isFinite(Number(savedState.remainingSeconds))
+        ? Math.max(0, Number(savedState.remainingSeconds))
+        : focusMinutes * 60;
 
-            if (history.length > 100) {
-                history.shift();
-            }
+    let isRunning = Boolean(savedState.isRunning);
+    let endTime = Number(savedState.endTime) || null;
+    let intervalId = null;
 
-            historyIndex = history.length - 1;
-            updateHistoryButtons();
+    focusInput.value = focusMinutes;
+    breakInput.value = breakMinutes;
 
-        }, 200);
+    function getDurationSeconds() {
+        return (mode === "focus" ? focusMinutes : breakMinutes) * 60;
     }
 
-    function applyHistory(direction) {
-        clearTimeout(historyTimer);
+    function formatTime(seconds) {
+        const safeSeconds = Math.max(0, Math.ceil(seconds));
+        const minutes = Math.floor(safeSeconds / 60);
+        const secondsPart = safeSeconds % 60;
 
-        // Save the latest content before undoing.
-        const currentContent = editor.innerHTML;
-
-        if (history[historyIndex] !== currentContent) {
-            history = history.slice(0, historyIndex + 1);
-            history.push(currentContent);
-
-            if (history.length > 100) history.shift();
-
-            historyIndex = history.length - 1;
-        }
-
-        const newIndex = historyIndex + direction;
-
-        if (newIndex < 0 || newIndex >= history.length) return;
-
-        historyIndex = newIndex;
-        editor.innerHTML = history[historyIndex];
-
-        editor.focus();
-
-        const range = document.createRange();
-        range.selectNodeContents(editor);
-        range.collapse(false);
-
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        savedRange = range.cloneRange();
-
-        updateHistoryButtons();
+        return String(minutes).padStart(2, "0") + ":" +
+            String(secondsPart).padStart(2, "0");
     }
 
-    editor.addEventListener("input", saveHistory);
-
-    // ==========================================
-    // TOOLBAR COMMANDS
-    // ==========================================
-
-    function executeCommand(command, value = null) {
-        restoreSelection();
-
-        document.execCommand(command, false, value);
-
-        saveSelection();
-
-        clearTimeout(historyTimer);
-
-        history.push(editor.innerHTML);
-        historyIndex = history.length - 1;
-
-        if (history.length > 100) {
-            history.shift();
-            historyIndex = history.length - 1;
-        }
-
-        updateHistoryButtons();
-    }
-
-    document.querySelectorAll(
-        ".editor-toolbar button[data-command]"
-    ).forEach(function (button) {
-
-        button.addEventListener("mousedown", function (event) {
-            event.preventDefault();
-            saveSelection();
-        });
-
-        button.addEventListener("click", function () {
-            const command = this.dataset.command;
-
-            if (command === "undo") {
-                applyHistory(-1);
-                return;
-            }
-
-            if (command === "redo") {
-                applyHistory(1);
-                return;
-            }
-
-            executeCommand(command);
-        });
-    });
-
-
-// ==========================================
-// FONT FAMILY - FIXED
-// ==========================================
-
-const fontFamily = document.getElementById("fontFamily");
-
-if (fontFamily) {
-
-    // Save selection before opening the dropdown.
-    fontFamily.addEventListener("mousedown", function () {
-        saveSelection();
-    });
-
-    fontFamily.addEventListener("change", function () {
-
-        const selectedFont = this.value;
-
-        if (!selectedFont) return;
-
-        restoreSelection();
-
-        const selection = window.getSelection();
-
-        if (!selection || selection.rangeCount === 0) {
-            editor.focus();
-            return;
-        }
-
-        const range = selection.getRangeAt(0);
-
-        if (!editor.contains(range.commonAncestorContainer)) {
-            return;
-        }
-
-        const span = document.createElement("span");
-        span.style.fontFamily = '"' + selectedFont + '"';
-
-        if (range.collapsed) {
-
-            // Apply selected font to text typed next.
-            span.appendChild(document.createTextNode("\u200B"));
-            range.insertNode(span);
-
-            const caret = document.createRange();
-            caret.setStart(span.firstChild, 1);
-            caret.collapse(true);
-
-            selection.removeAllRanges();
-            selection.addRange(caret);
-
-            saveSelection();
-
-        } else {
-
-            // Apply selected font to highlighted text.
-            span.appendChild(range.extractContents());
-            range.insertNode(span);
-
-            const newRange = document.createRange();
-            newRange.selectNodeContents(span);
-
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-
-            saveSelection();
-        }
-
-        // Update undo history.
-        clearTimeout(historyTimer);
-
-        history.push(editor.innerHTML);
-        historyIndex = history.length - 1;
-
-        if (history.length > 100) {
-            history.shift();
-            historyIndex = history.length - 1;
-        }
-
-        updateHistoryButtons();
-
-    });
-}
-
-    // ==========================================
-    // FONT SIZE
-    // ==========================================
-
-    const fontSizeInput = document.getElementById("fontSize");
-    const decreaseButton = document.getElementById("fontDecrease");
-    const increaseButton = document.getElementById("fontIncrease");
-
-    function getFontSize() {
-        let size = parseInt(fontSizeInput.value, 10);
-
-        if (isNaN(size)) size = 12;
-
-        size = Math.max(1, Math.min(200, size));
-
-        fontSizeInput.value = size;
-
-        return size;
-    }
-
-    function applyFontSize(size) {
-        restoreSelection();
-
-        const selection = window.getSelection();
-
-        if (!selection || selection.rangeCount === 0) return;
-
-        const range = selection.getRangeAt(0);
-
-        const span = document.createElement("span");
-        span.style.fontSize = size + "px";
-
-        if (range.collapsed) {
-
-            span.textContent = "\u200B";
-            range.insertNode(span);
-
-            const newRange = document.createRange();
-            newRange.setStart(span.firstChild, 1);
-            newRange.collapse(true);
-
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-
-            savedRange = newRange.cloneRange();
-
-        } else {
-
-            span.appendChild(range.extractContents());
-            range.insertNode(span);
-
-            const newRange = document.createRange();
-            newRange.selectNodeContents(span);
-
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-
-            savedRange = newRange.cloneRange();
-        }
-
-        clearTimeout(historyTimer);
-        history.push(editor.innerHTML);
-        historyIndex = history.length - 1;
-
-        updateHistoryButtons();
-    }
-
-    if (fontSizeInput) {
-
-        fontSizeInput.addEventListener("change", function () {
-            applyFontSize(getFontSize());
-        });
-
-        fontSizeInput.addEventListener("keydown", function (event) {
-
-            if (event.key === "Enter") {
-                event.preventDefault();
-
-                applyFontSize(getFontSize());
-
-                fontSizeInput.blur();
-            }
+    function saveTimerState() {
+        saveStorage(STATE_KEY, {
+            mode: mode,
+            remainingSeconds: remainingSeconds,
+            isRunning: isRunning,
+            endTime: endTime,
+            completedSessions: completedSessions
         });
     }
 
-    if (decreaseButton) {
-        decreaseButton.addEventListener("click", function () {
+    function renderTimer() {
+        display.textContent = formatTime(remainingSeconds);
+        modeLabel.textContent = mode === "focus" ? "FOCUS TIME" : "BREAK TIME";
+        sessionsDisplay.textContent = completedSessions;
+        startButton.textContent = isRunning ? "PAUSE" : "START";
 
-            const size = Math.max(1, getFontSize() - 1);
-
-            fontSizeInput.value = size;
-
-            applyFontSize(size);
+        tabs.forEach(function (tab) {
+            tab.classList.toggle("active", tab.dataset.mode === mode);
         });
-    }
 
-    if (increaseButton) {
-        increaseButton.addEventListener("click", function () {
-
-            const size = Math.min(200, getFontSize() + 1);
-
-            fontSizeInput.value = size;
-
-            applyFontSize(size);
-        });
-    }
-
-    // ==========================================
-    // TEXT COLOR
-    // ==========================================
-
-    const textColor = document.getElementById("textColor");
-
-    if (textColor) {
-
-        textColor.addEventListener("mousedown", saveSelection);
-
-        textColor.addEventListener("input", function () {
-            executeCommand("foreColor", this.value);
-        });
-    }
-
-    // ==========================================
-    // HIGHLIGHT COLOR
-    // ==========================================
-
-    const highlightColor = document.getElementById("highlightColor");
-
-    if (highlightColor) {
-
-        highlightColor.addEventListener("mousedown", saveSelection);
-
-        highlightColor.addEventListener("input", function () {
-            executeCommand("hiliteColor", this.value);
-        });
-    }
-
-    // ==========================================
-    // SAVE NOTE
-    // ==========================================
-
-    const noteForm = document.getElementById("noteForm");
-
-    if (noteForm) {
-
-        noteForm.addEventListener("submit", function (event) {
-
-            const title = noteForm.querySelector(".editor-title");
-            const content = document.getElementById("savedContent");
-
-            if (!title.value.trim()) {
-                event.preventDefault();
-                alert("Please enter a note title.");
-                title.focus();
-                return;
-            }
-
-            content.value = editor.innerHTML;
-        });
-    }
-
-    // ==========================================
-    // KEYBOARD UNDO / REDO
-    // ==========================================
-
-    editor.addEventListener("keydown", function (event) {
-
-        const isMac = navigator.platform
-            .toUpperCase()
-            .includes("MAC");
-
-        const modifier = isMac ? event.metaKey : event.ctrlKey;
-
-        if (modifier && event.key.toLowerCase() === "z") {
-
-            event.preventDefault();
-
-            if (event.shiftKey) {
-                applyHistory(1);
-            } else {
-                applyHistory(-1);
-            }
-        }
-
-        if (modifier && event.key.toLowerCase() === "y") {
-
-            event.preventDefault();
-            applyHistory(1);
-        }
-    });
-
-    // ==========================================
-    // SEARCH INSIDE NOTE
-    // ==========================================
-
-    const editorSearch = document.getElementById("editorSearch");
-
-    if (editorSearch) {
-
-        editorSearch.addEventListener("keydown", function (event) {
-
-            if (event.key !== "Enter") return;
-
-            const query = this.value.trim().toLowerCase();
-
-            if (!query) return;
-
-            const walker = document.createTreeWalker(
-                editor,
-                NodeFilter.SHOW_TEXT
-            );
-
-            let node;
-            let found = false;
-
-            while ((node = walker.nextNode())) {
-
-                const position = node.textContent
-                    .toLowerCase()
-                    .indexOf(query);
-
-                if (position === -1) continue;
-
-                const range = document.createRange();
-
-                range.setStart(node, position);
-                range.setEnd(node, position + query.length);
-
-                const selection = window.getSelection();
-
-                selection.removeAllRanges();
-                selection.addRange(range);
-
-                savedRange = range.cloneRange();
-
-                node.parentElement.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center"
-                });
-
-                editor.focus();
-
-                found = true;
-                break;
-            }
-
-            if (!found) {
-                alert("No matching text found.");
-            }
-        });
-    }
-
-    // ==========================================
-    // TO-DO LIST
-    // ==========================================
-
-    const todoInput = document.getElementById("todoInput");
-    const todoList = document.getElementById("todoList");
-    const addTodoButton = document.getElementById("addTodoButton");
-
-    const progressBar = document.getElementById("todoProgressBar");
-    const progressLabel = document.getElementById("todoProgressLabel");
-
-    function updateTodoProgress() {
-
-        if (!todoList) return;
-
-        const checkboxes = todoList.querySelectorAll(
-            'input[type="checkbox"]'
+        circle.setAttribute(
+            "aria-label",
+            (mode === "focus" ? "Focus time " : "Break time ") +
+            formatTime(remainingSeconds)
         );
 
-        const completed = todoList.querySelectorAll(
-            'input[type="checkbox"]:checked'
-        ).length;
+        document.title = isRunning
+            ? formatTime(remainingSeconds) + " - StudyHive"
+            : "My Notes | StudyHive";
 
-        const total = checkboxes.length;
+        saveTimerState();
+    }
 
-        const percentage = total
-            ? (completed / total) * 100
-            : 0;
+    function setStatus(message) {
+        statusLabel.textContent = message;
+    }
 
-        if (progressBar) {
-            progressBar.style.width = percentage + "%";
-        }
-
-        if (progressLabel) {
-            progressLabel.textContent =
-                completed + " of " + total + " tasks completed";
+    function stopInterval() {
+        if (intervalId !== null) {
+            clearInterval(intervalId);
+            intervalId = null;
         }
     }
 
-    function addTodo() {
+    function switchMode(nextMode, message) {
+        stopInterval();
 
-        const task = todoInput.value.trim();
+        mode = nextMode;
+        isRunning = false;
+        endTime = null;
+        remainingSeconds = getDurationSeconds();
 
-        if (!task) return;
+        setStatus(message || (
+            mode === "focus"
+                ? "Ready to focus?"
+                : "Take a short break."
+        ));
 
-        const label = document.createElement("label");
-        label.className = "todo-item";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-
-        checkbox.addEventListener("change", updateTodoProgress);
-
-        const text = document.createElement("span");
-        text.textContent = task;
-
-        label.appendChild(checkbox);
-        label.appendChild(text);
-
-        todoList.appendChild(label);
-
-        todoInput.value = "";
-        todoInput.focus();
-
-        updateTodoProgress();
+        renderTimer();
     }
 
-    if (addTodoButton) {
-        addTodoButton.addEventListener("click", addTodo);
-    }
+    function showTimerAlert(title, message, completedMode) {
+        // Always show an in-page alert, even if browser notifications are blocked.
+        let alertBox = document.getElementById("pomodoroCompletionAlert");
 
-    if (todoInput) {
+        if (!alertBox) {
+            alertBox = document.createElement("div");
+            alertBox.id = "pomodoroCompletionAlert";
+            alertBox.className = "pomodoro-completion-alert";
+            alertBox.setAttribute("role", "alert");
+            alertBox.setAttribute("aria-live", "assertive");
+            alertBox.innerHTML = `
+                <div class="pomodoro-alert-icon" aria-hidden="true">✓</div>
+                <div class="pomodoro-alert-copy">
+                    <strong class="pomodoro-alert-title"></strong>
+                    <span class="pomodoro-alert-message"></span>
+                </div>
+                <button type="button" class="pomodoro-alert-close" aria-label="Dismiss notification">&times;</button>
+            `;
+            document.body.appendChild(alertBox);
 
-        todoInput.addEventListener("keydown", function (event) {
-
-            if (event.key === "Enter") {
-                event.preventDefault();
-                addTodo();
-            }
-        });
-    }
-
-    updateTodoProgress();
-    updateHistoryButtons();
-});
-
-// ==============================================
-// DASHBOARD FUNCTIONS
-// ==============================================
-
-function initializeDashboard() {
-
-    const folderForm = document.getElementById("folderForm");
-    const showFolderForm = document.getElementById("showFolderForm");
-    const cancelFolderForm = document.getElementById("cancelFolderForm");
-
-    if (showFolderForm && folderForm) {
-
-        showFolderForm.addEventListener("click", function () {
-
-            folderForm.hidden = !folderForm.hidden;
-
-            if (!folderForm.hidden) {
-
-                folderForm.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center"
-                });
-
-                document.getElementById("folder_name")?.focus();
-            }
-        });
-    }
-
-    if (cancelFolderForm && folderForm) {
-
-        cancelFolderForm.addEventListener("click", function () {
-            folderForm.hidden = true;
-        });
-    }
-
-    // Dashboard search
-
-    const dashboardSearch = document.getElementById("dashboardSearch");
-
-    if (dashboardSearch) {
-
-        dashboardSearch.addEventListener("input", function () {
-
-            const query = this.value.toLowerCase().trim();
-
-            document.querySelectorAll(".searchable").forEach(function (item) {
-
-                const matches = item.textContent
-                    .toLowerCase()
-                    .includes(query);
-
-                item.style.display = matches ? "" : "none";
+            alertBox.querySelector(".pomodoro-alert-close").addEventListener("click", function () {
+                alertBox.classList.remove("show");
             });
+        }
+
+        alertBox.querySelector(".pomodoro-alert-title").textContent = title;
+        alertBox.querySelector(".pomodoro-alert-message").textContent = message;
+        alertBox.classList.toggle("break-complete", completedMode === "break");
+        alertBox.classList.add("show");
+
+        clearTimeout(alertBox.dismissTimer);
+        alertBox.dismissTimer = setTimeout(function () {
+            alertBox.classList.remove("show");
+        }, 9000);
+
+        // Also send an operating-system notification when permission is available.
+        if ("Notification" in window && Notification.permission === "granted") {
+            try {
+                new Notification(title, { body: message, tag: "studyhive-pomodoro" });
+            } catch (error) {
+                // The in-page alert remains available if system notifications fail.
+            }
+        }
+
+        // Short sound cue; browsers may suppress it if audio has not been enabled.
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) {
+                const audioContext = new AudioContextClass();
+                const oscillator = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                oscillator.connect(gain);
+                gain.connect(audioContext.destination);
+                oscillator.frequency.value = completedMode === "focus" ? 880 : 660;
+                gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.12, audioContext.currentTime + 0.03);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.65);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.7);
+                oscillator.onended = function () { audioContext.close(); };
+            }
+        } catch (error) {
+            // Sound is optional; visual alerts are the primary fallback.
+        }
+    }
+
+    async function saveCompletedSession() {
+
+        const formData = new URLSearchParams();
+        formData.append("action", "save_pomodoro_session");
+        formData.append("csrf_token", toggle.dataset.csrf || "");
+        formData.append("focus_minutes", String(focusMinutes));
+        formData.append("break_minutes", String(breakMinutes));
+        formData.append("folder_id", String(toggle.dataset.folderId || 0));
+        formData.append("note_id", String(toggle.dataset.noteId || 0));
+
+        try {
+            const response = await fetch("notes.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                },
+                body: formData.toString()
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                console.error("Unable to save Pomodoro session:", result.message || response.status);
+            }
+        } catch (error) {
+            console.error("Pomodoro session recording error:", error);
+        }
+    }
+
+    function finishSession() {
+        stopInterval();
+
+        const completedMode = mode;
+        isRunning = false;
+        endTime = null;
+
+        if (completedMode === "focus") {
+            completedSessions++;
+            saveCompletedSession();
+
+            switchMode(
+                "break",
+                "Focus session complete! Take a break."
+            );
+
+            showTimerAlert(
+                "Focus session completed!",
+                "Great work! Your focus time is finished. Time to take a break.",
+                completedMode
+            );
+
+        } else {
+
+            switchMode(
+                "focus",
+                "Break finished. Ready to focus?"
+            );
+
+            showTimerAlert(
+                "Break time is over!",
+                "Your break has finished. You're ready for another focus session.",
+                completedMode
+            );
+
+        }
+
+        renderTimer();
+    }
+
+    function tick() {
+        if (!isRunning || !endTime) return;
+
+        remainingSeconds = Math.max(
+            0,
+            Math.ceil((endTime - Date.now()) / 1000)
+        );
+
+        if (remainingSeconds <= 0) {
+            finishSession();
+            return;
+        }
+
+        display.textContent = formatTime(remainingSeconds);
+        sessionsDisplay.textContent = completedSessions;
+
+        document.title = formatTime(remainingSeconds) + " - StudyHive";
+
+        saveTimerState();
+    }
+
+    function startTimer() {
+        if (isRunning) return;
+
+        // A focus session must belong to a saved note so Achievements
+        // can display the correct note title and summed focus duration.
+        if (mode === "focus" && Number(toggle.dataset.noteId || 0) < 1) {
+            alert("Please save your note first. Then open it again and start the Focus Timer so this session can be linked to its note title in Achievements.");
+            return;
+        }
+
+        if (remainingSeconds <= 0) {
+            remainingSeconds = getDurationSeconds();
+        }
+
+        isRunning = true;
+        endTime = Date.now() + remainingSeconds * 1000;
+
+        setStatus(
+            mode === "focus"
+                ? "Stay focused. You've got this!"
+                : "Relax and recharge."
+        );
+
+        stopInterval();
+        intervalId = setInterval(tick, 250);
+
+        if (
+            "Notification" in window &&
+            Notification.permission === "default"
+        ) {
+            Notification.requestPermission().catch(function () {});
+        }
+
+        renderTimer();
+    }
+
+    function pauseTimer() {
+        if (!isRunning) return;
+
+        remainingSeconds = Math.max(
+            0,
+            Math.ceil((endTime - Date.now()) / 1000)
+        );
+
+        isRunning = false;
+        endTime = null;
+
+        stopInterval();
+
+        setStatus("Timer paused.");
+
+        renderTimer();
+    }
+
+    function resetTimer() {
+        stopInterval();
+
+        isRunning = false;
+        endTime = null;
+        remainingSeconds = getDurationSeconds();
+
+        setStatus("Timer reset.");
+
+        renderTimer();
+    }
+
+    // OPEN AND CLOSE TIMER
+
+    toggle.addEventListener("click", function () {
+        panel.hidden = !panel.hidden;
+
+        toggle.setAttribute(
+            "aria-expanded",
+            String(!panel.hidden)
+        );
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener("click", function () {
+            panel.hidden = true;
+            toggle.setAttribute("aria-expanded", "false");
         });
     }
-}
+
+    // START AND PAUSE
+
+    startButton.addEventListener("click", function () {
+        if (isRunning) {
+            pauseTimer();
+        } else {
+            startTimer();
+        }
+    });
+
+    // RESET
+
+    resetButton.addEventListener("click", resetTimer);
+
+    // SKIP CURRENT SESSION
+
+    skipButton.addEventListener("click", function () {
+        switchMode(
+            mode === "focus" ? "break" : "focus",
+            mode === "focus"
+                ? "Focus skipped. Take a break."
+                : "Break skipped. Back to focus!"
+        );
+    });
+
+    // SWITCH BETWEEN FOCUS AND BREAK
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+
+            const selectedMode = tab.dataset.mode;
+
+            if (
+                selectedMode === "focus" ||
+                selectedMode === "break"
+            ) {
+                switchMode(
+                    selectedMode,
+                    selectedMode === "focus"
+                        ? "Ready to focus?"
+                        : "Take a short break."
+                );
+            }
+
+        });
+    });
+
+    // SAVE TIMER SETTINGS
+
+    saveSettingsButton.addEventListener("click", function () {
+
+        const newFocus = Number(focusInput.value);
+        const newBreak = Number(breakInput.value);
+
+        if (
+            !Number.isInteger(newFocus) ||
+            newFocus < 1 ||
+            newFocus > 180
+        ) {
+            alert("Focus length must be between 1 and 180 minutes.");
+            focusInput.focus();
+            return;
+        }
+
+        if (
+            !Number.isInteger(newBreak) ||
+            newBreak < 1 ||
+            newBreak > 60
+        ) {
+            alert("Break length must be between 1 and 60 minutes.");
+            breakInput.focus();
+            return;
+        }
+
+        focusMinutes = newFocus;
+        breakMinutes = newBreak;
+
+        saveStorage(STORAGE_KEY, {
+            focusMinutes: focusMinutes,
+            breakMinutes: breakMinutes
+        });
+
+        resetTimer();
+
+        setStatus("Timer settings saved.");
+
+        renderTimer();
+    });
+
+    // RESTORE TIMER AFTER PAGE REFRESH
+
+    if (isRunning && endTime) {
+
+        remainingSeconds = Math.max(
+            0,
+            Math.ceil((endTime - Date.now()) / 1000)
+        );
+
+        if (remainingSeconds <= 0) {
+            finishSession();
+        } else {
+            intervalId = setInterval(tick, 250);
+        }
+
+    } else {
+
+        isRunning = false;
+        endTime = null;
+
+    }
+
+    renderTimer();
+
+});
