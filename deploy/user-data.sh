@@ -2,10 +2,7 @@
 # =====================================================================
 # StudyHive — EC2 launch script (user data)
 # OS: Amazon Linux 2023
-#
-# Paste this whole file into the Launch Template:
-#   Advanced details -> User data
-#
+
 # On every new instance it:
 #   1. installs Apache, PHP and the MariaDB client
 #   2. clones the StudyHive repo from GitHub into /var/www/html
@@ -22,7 +19,6 @@
 # Required on the instance role (studyhive-ec2-role):
 #   ssm:GetParameter on arn:aws:ssm:<region>:<account>:parameter/studyhive/*
 #
-# Log of this script on the instance: /var/log/studyhive-setup.log
 # =====================================================================
 set -euo pipefail
 exec > >(tee -a /var/log/studyhive-setup.log) 2>&1
@@ -60,15 +56,23 @@ DB_PASS=$(get_param /studyhive/db/password)
 
 # ---- 4. Server-only config file (read by config/database.php) --------
 mkdir -p /etc/studyhive
+
+# RDS requires TLS (require_secure_transport=ON). Download the AWS RDS
+# CA bundle so the app and the mysql client can verify the database.
+SSL_CA="/etc/studyhive/rds-ca.pem"
+curl -fsSL -o "$SSL_CA" https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+chmod 644 "$SSL_CA"
+
 php -r '
-  $c = ["host" => $argv[1], "dbname" => $argv[2], "username" => $argv[3], "password" => $argv[4]];
+  $c = ["host" => $argv[1], "dbname" => $argv[2], "username" => $argv[3], "password" => $argv[4], "ssl_ca" => $argv[5]];
   file_put_contents("/etc/studyhive/config.php", "<?php\nreturn " . var_export($c, true) . ";\n");
-' "$DB_HOST" "$DB_NAME" "$DB_USER" "$DB_PASS"
+' "$DB_HOST" "$DB_NAME" "$DB_USER" "$DB_PASS" "$SSL_CA"
 chown root:apache /etc/studyhive/config.php
 chmod 640 /etc/studyhive/config.php
 
 # ---- 5. Create tables if missing (schema is idempotent) --------------
-MYSQL_PWD="$DB_PASS" mysql -h "$DB_HOST" -u "$DB_USER" "$DB_NAME" \
+MYSQL_PWD="$DB_PASS" mysql -h "$DB_HOST" -u "$DB_USER" \
+  --ssl-ca="$SSL_CA" --ssl-verify-server-cert "$DB_NAME" \
   < "$WEB_ROOT/database/schema.sql"
 
 # Don't serve the schema or deploy scripts over HTTP

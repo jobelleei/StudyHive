@@ -23,11 +23,24 @@ if (is_readable($serverConfigFile)) {
     $config = array_merge($config, require $serverConfigFile);
 }
 
+// RDS only accepts TLS connections. The server config sets "ssl_ca" to the
+// AWS RDS CA bundle; locally (XAMPP) it is absent and no TLS is used.
+$options = [];
+
+if (!empty($config["ssl_ca"])) {
+    // PHP 8.4+ renamed the constant; the old name is deprecated in 8.5.
+    $sslCaAttr = defined("Pdo\\Mysql::ATTR_SSL_CA")
+        ? constant("Pdo\\Mysql::ATTR_SSL_CA")
+        : PDO::MYSQL_ATTR_SSL_CA;
+    $options[$sslCaAttr] = $config["ssl_ca"];
+}
+
 try {
     $pdo = new PDO(
         "mysql:host={$config['host']};dbname={$config['dbname']};charset=utf8mb4",
         $config["username"],
-        $config["password"]
+        $config["password"],
+        $options
     );
 
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -38,6 +51,6 @@ try {
     exit("Unable to connect to the database.");
 }
 
-unset($config, $serverConfigFile);
+unset($config, $serverConfigFile, $options, $sslCaAttr);
 
 ?>
