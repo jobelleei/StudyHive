@@ -74,7 +74,7 @@ $first_name = $_SESSION["first_name"] ?? $first_name;
     <title>Settings | StudyHive</title>
 
     <link rel="icon" type="image/png" href="../assets/images/logo.png">
-    <link rel="stylesheet" href="../assets/css/settings.css">
+    <link rel="stylesheet" href="../assets/css/settings.css?v=polish1">
 </head>
 
 <body>
@@ -127,6 +127,8 @@ $first_name = $_SESSION["first_name"] ?? $first_name;
             </div>
 
         </section>
+
+        <img src="../assets/images/bee.png" alt="" class="hero-bee" aria-hidden="true">
 
     </main>
 

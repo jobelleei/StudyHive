@@ -2140,3 +2140,70 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb {
 html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
     background: #6179f4;
 }
+/* =====================================================
+   EDITOR FORMATTING FIXES
+===================================================== */
+
+/* The global "* { font-family }" rule would otherwise override
+   fonts chosen in the editor on nested elements (bold, lists, etc.). */
+.editor-writing-area {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.editor-writing-area * {
+    font-family: inherit;
+}
+
+.editor-writing-area ol {
+    padding-left: 30px;
+    list-style-type: decimal;
+}
+
+.editor-writing-area ul ul {
+    list-style-type: circle;
+}
+
+.toolbar-button.active {
+    color: #6179f4;
+    background: #ffffff88;
+}
+
+.toolbar-button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.toolbar-button:disabled:hover {
+    color: inherit;
+    background: transparent;
+}
+
+.todo-item {
+    position: relative;
+}
+
+.todo-remove {
+    margin-left: auto;
+    border: none;
+    background: transparent;
+    color: #999999;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+}
+
+.todo-item:hover .todo-remove,
+.todo-remove:focus {
+    opacity: 1;
+}
+
+.todo-remove:hover {
+    color: #d9534f;
+}
+
+html[data-theme="dark"] .toolbar-button.active {
+    background: #ffffff22;
+}

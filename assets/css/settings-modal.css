@@ -698,3 +698,102 @@ html[data-theme="dark"] .settings-overlay .duration-control input {
     .settings-overlay .logout-tab { display: none; }
     .settings-overlay .settings-content { padding: 20px; }
 }
+
+/* =====================================================
+   ACCOUNT NAME FIELD
+===================================================== */
+
+.settings-overlay .account-form {
+    width: 100%;
+}
+
+.settings-overlay .account-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 22px;
+    padding: 18px 20px 20px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+}
+
+.settings-overlay .account-edit-field label {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.settings-overlay .account-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.settings-overlay .account-input-wrap svg {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.settings-overlay .account-input-icon {
+    left: 15px;
+    color: var(--muted);
+}
+
+.settings-overlay .account-input-edit {
+    right: 15px;
+    color: var(--muted);
+    opacity: 0.6;
+}
+
+.settings-overlay .account-edit-field input {
+    width: 100%;
+    height: 50px;
+    padding: 0 46px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--modal);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+    box-shadow: 0 1px 2px rgba(23, 23, 40, 0.05);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.settings-overlay .account-edit-field input::placeholder {
+    color: var(--muted);
+    font-weight: 400;
+}
+
+.settings-overlay .account-edit-field input:hover {
+    border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+}
+
+.settings-overlay .account-edit-field input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(82, 105, 237, 0.15);
+}
+
+.settings-overlay .account-input-wrap:focus-within .account-input-icon {
+    color: var(--primary);
+}
+
+.settings-overlay .account-input-wrap:focus-within .account-input-edit {
+    opacity: 0;
+}
+
+html[data-theme="dark"] .settings-overlay .account-edit-field input:focus {
+    box-shadow: 0 0 0 4px rgba(82, 105, 237, 0.3);
+}

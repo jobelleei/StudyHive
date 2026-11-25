@@ -251,7 +251,7 @@ $eventsJson = json_encode(
     </script>
 
     <link rel="stylesheet" href="../assets/css/calendar.css?v=calendar-dark-layout-2">
-    <link rel="stylesheet" href="../assets/css/settings-modal.css?v=3">
+    <link rel="stylesheet" href="../assets/css/settings-modal.css?v=4">
 </head>
 
 <body>

@@ -519,8 +519,8 @@ if (!$editor_mode && !$selected_folder) {
         }
     })();
     </script>
-    <link rel="stylesheet" href="../assets/css/notes.css?v=achievements1">
-    <link rel="stylesheet" href="../assets/css/settings-modal.css?v=3">
+    <link rel="stylesheet" href="../assets/css/notes.css?v=editor2">
+    <link rel="stylesheet" href="../assets/css/settings-modal.css?v=4">
 </head>
 
 <body>
@@ -603,8 +603,8 @@ if (!$editor_mode && !$selected_folder) {
                     <div class="toolbar-group">
 
                         <select class="toolbar-select" id="fontFamily" title="Font family">
-                            <option value="Arial">Arial</option>
-                            <option value="Times New Roman" selected>Times New Roman</option>
+                            <option value="Arial" selected>Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
                             <option value="Georgia">Georgia</option>
                             <option value="Verdana">Verdana</option>
                             <option value="Tahoma">Tahoma</option>
@@ -614,7 +614,7 @@ if (!$editor_mode && !$selected_folder) {
                         <button type="button" class="toolbar-button size-button" id="fontDecrease"
                             title="Decrease font size">−</button>
 
-                        <input type="number" id="fontSize" class="font-size-input" value="12" min="1" max="200" step="1"
+                        <input type="number" id="fontSize" class="font-size-input" value="16" min="1" max="200" step="1"
                             title="Enter font size in pixels" aria-label="Font size in pixels">
 
                         <span class="font-size-unit">px</span>
@@ -1214,7 +1214,7 @@ if (!$editor_mode && !$selected_folder) {
 
     </main>
 
-    <script src="../assets/js/notes.js?v=pomodoro3"></script>
+    <script src="../assets/js/notes.js?v=editor2"></script>
 
 
     <?php include __DIR__ . "/includes/settings_modal.php"; ?>

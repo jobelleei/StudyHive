@@ -1,4 +1,579 @@
 /* =====================================================
+   NOTE EDITOR (toolbar, fonts, sizes, search, to-dos)
+===================================================== */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Dashboard search filters folder and note cards.
+    const dashboardSearch = document.getElementById("dashboardSearch");
+
+    if (dashboardSearch) {
+        dashboardSearch.addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+            document.querySelectorAll(".searchable").forEach(function (item) {
+                item.style.display = item.textContent.toLowerCase().includes(query) ? "" : "none";
+            });
+        });
+    }
+
+    const editor = document.getElementById("noteEditor");
+    if (!editor) return;
+
+    const FONT_STACKS = {
+        "Arial": "Arial, Helvetica, sans-serif",
+        "Times New Roman": "\"Times New Roman\", Times, serif",
+        "Georgia": "Georgia, serif",
+        "Verdana": "Verdana, Geneva, sans-serif",
+        "Tahoma": "Tahoma, Verdana, sans-serif",
+        "Courier New": "\"Courier New\", Courier, monospace"
+    };
+
+    const MIN_SIZE = 1;
+    const MAX_SIZE = 200;
+
+    const fontFamilySelect = document.getElementById("fontFamily");
+    const fontSizeInput = document.getElementById("fontSize");
+    const decreaseButton = document.getElementById("fontDecrease");
+    const increaseButton = document.getElementById("fontIncrease");
+    const textColor = document.getElementById("textColor");
+    const highlightColor = document.getElementById("highlightColor");
+    const commandButtons = document.querySelectorAll(".editor-toolbar button[data-command]");
+    const undoButton = document.querySelector('.editor-toolbar [data-command="undo"]');
+    const redoButton = document.querySelector('.editor-toolbar [data-command="redo"]');
+
+    // ------------------------------------------
+    // SELECTION HANDLING
+    // ------------------------------------------
+
+    let savedRange = null;
+
+    function selectionInEditor() {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return null;
+        const range = selection.getRangeAt(0);
+        return editor.contains(range.commonAncestorContainer) ? range : null;
+    }
+
+    function saveSelection() {
+        const range = selectionInEditor();
+        if (range) savedRange = range.cloneRange();
+    }
+
+    function restoreSelection() {
+        editor.focus({ preventScroll: true });
+        const selection = window.getSelection();
+
+        if (savedRange && editor.contains(savedRange.commonAncestorContainer)) {
+            selection.removeAllRanges();
+            selection.addRange(savedRange);
+            return;
+        }
+
+        // No previous selection: place the caret at the end of the note.
+        if (!selectionInEditor()) {
+            const range = document.createRange();
+            range.selectNodeContents(editor);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
+    function selectRange(range) {
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        savedRange = range.cloneRange();
+    }
+
+    // ------------------------------------------
+    // UNDO / REDO HISTORY
+    // ------------------------------------------
+
+    let history = [editor.innerHTML];
+    let historyIndex = 0;
+    let historyTimer = null;
+
+    function updateHistoryButtons() {
+        if (undoButton) undoButton.disabled = historyIndex <= 0;
+        if (redoButton) redoButton.disabled = historyIndex >= history.length - 1;
+    }
+
+    function pushHistory() {
+        clearTimeout(historyTimer);
+        const content = editor.innerHTML;
+        if (history[historyIndex] === content) return;
+
+        history = history.slice(0, historyIndex + 1);
+        history.push(content);
+        if (history.length > 100) history.shift();
+        historyIndex = history.length - 1;
+        updateHistoryButtons();
+    }
+
+    function scheduleHistory() {
+        clearTimeout(historyTimer);
+        historyTimer = setTimeout(pushHistory, 300);
+    }
+
+    function applyHistory(direction) {
+        pushHistory();
+        const newIndex = historyIndex + direction;
+        if (newIndex < 0 || newIndex >= history.length) return;
+
+        historyIndex = newIndex;
+        editor.innerHTML = history[historyIndex];
+
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+        editor.focus({ preventScroll: true });
+        selectRange(range);
+
+        updateHistoryButtons();
+        updateToolbarState();
+    }
+
+    editor.addEventListener("input", scheduleHistory);
+
+    // ------------------------------------------
+    // INLINE STYLE APPLICATION (font + size)
+    // ------------------------------------------
+
+    // Wraps the current selection in spans carrying the given style.
+    // Uses the browser's own <font> wrapping (which handles selections
+    // across paragraphs, lists, etc.) and then converts the markers into
+    // clean <span style="..."> elements.
+    function applyInlineStyle(property, value) {
+        restoreSelection();
+        const range = selectionInEditor();
+        if (!range) return;
+
+        if (range.collapsed) {
+            // Nothing selected: create a styled span so the next typed text uses it.
+            const span = document.createElement("span");
+            span.style[property] = value;
+            span.appendChild(document.createTextNode("​"));
+            range.insertNode(span);
+
+            const caret = document.createRange();
+            caret.setStart(span.firstChild, 1);
+            caret.collapse(true);
+            selectRange(caret);
+            pushHistory();
+            return;
+        }
+
+        document.execCommand("styleWithCSS", false, false);
+
+        // Marker: font size 7 is a value we immediately replace.
+        document.execCommand("fontSize", false, "7");
+
+        const created = [];
+        editor.querySelectorAll('font[size="7"]').forEach(function (font) {
+            const span = document.createElement("span");
+
+            // Keep any other attributes the browser merged into the <font>.
+            if (font.getAttribute("style")) span.setAttribute("style", font.getAttribute("style"));
+            if (font.getAttribute("color")) span.style.color = font.getAttribute("color");
+            if (font.getAttribute("face")) span.style.fontFamily = font.getAttribute("face");
+            span.style.removeProperty("font-size");
+            span.style[property] = value;
+
+            while (font.firstChild) span.appendChild(font.firstChild);
+            font.replaceWith(span);
+            created.push(span);
+        });
+
+        // Chrome sometimes writes the marker as a CSS keyword on an existing span.
+        editor.querySelectorAll("[style]").forEach(function (el) {
+            if (el.style.fontSize === "xxx-large" || el.style.fontSize === "-webkit-xxx-large") {
+                el.style.removeProperty("font-size");
+                el.style[property] = value;
+                created.push(el);
+            }
+        });
+
+        // Descendants with their own value would override the new one.
+        created.forEach(function (span) {
+            span.querySelectorAll("*").forEach(function (child) {
+                if (child.style && child.style[property]) {
+                    child.style.removeProperty(property === "fontFamily" ? "font-family" : "font-size");
+                    if (!child.getAttribute("style")) child.removeAttribute("style");
+                }
+            });
+            span.querySelectorAll("font").forEach(function (font) {
+                if (property === "fontFamily") font.removeAttribute("face");
+                if (property === "fontSize") font.removeAttribute("size");
+            });
+        });
+
+        document.execCommand("styleWithCSS", false, true);
+
+        if (created.length) {
+            const newRange = document.createRange();
+            newRange.setStartBefore(created[0]);
+            newRange.setEndAfter(created[created.length - 1]);
+            selectRange(newRange);
+        } else {
+            saveSelection();
+        }
+
+        pushHistory();
+        updateToolbarState();
+    }
+
+    // ------------------------------------------
+    // TOOLBAR BUTTONS
+    // ------------------------------------------
+
+    function executeCommand(command, value) {
+        restoreSelection();
+        document.execCommand("styleWithCSS", false, true);
+        document.execCommand(command, false, value === undefined ? null : value);
+        saveSelection();
+        pushHistory();
+        updateToolbarState();
+    }
+
+    commandButtons.forEach(function (button) {
+        // Keep the editor selection when the button is pressed.
+        button.addEventListener("mousedown", function (event) {
+            event.preventDefault();
+        });
+
+        button.addEventListener("click", function () {
+            const command = this.dataset.command;
+            if (command === "undo") return applyHistory(-1);
+            if (command === "redo") return applyHistory(1);
+            executeCommand(command);
+        });
+    });
+
+    // ------------------------------------------
+    // FONT FAMILY
+    // ------------------------------------------
+
+    if (fontFamilySelect) {
+        fontFamilySelect.addEventListener("change", function () {
+            const stack = FONT_STACKS[this.value] || this.value;
+            applyInlineStyle("fontFamily", stack);
+        });
+    }
+
+    // ------------------------------------------
+    // FONT SIZE
+    // ------------------------------------------
+
+    function clampSize(value) {
+        let size = parseInt(value, 10);
+        if (isNaN(size)) size = 16;
+        return Math.max(MIN_SIZE, Math.min(MAX_SIZE, size));
+    }
+
+    function setFontSize(size) {
+        size = clampSize(size);
+        fontSizeInput.value = size;
+        applyInlineStyle("fontSize", size + "px");
+    }
+
+    if (fontSizeInput) {
+        fontSizeInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                setFontSize(this.value);
+            } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                event.preventDefault();
+                setFontSize(clampSize(this.value) + (event.key === "ArrowUp" ? 1 : -1));
+                this.focus();
+            }
+        });
+
+        fontSizeInput.addEventListener("change", function () {
+            setFontSize(this.value);
+        });
+    }
+
+    [decreaseButton, increaseButton].forEach(function (button) {
+        if (!button) return;
+        button.addEventListener("mousedown", function (event) {
+            event.preventDefault();
+        });
+        button.addEventListener("click", function () {
+            const step = button === increaseButton ? 1 : -1;
+            setFontSize(clampSize(fontSizeInput.value) + step);
+        });
+    });
+
+    // ------------------------------------------
+    // TEXT AND HIGHLIGHT COLOR
+    // ------------------------------------------
+
+    if (textColor) {
+        textColor.addEventListener("input", function () {
+            executeCommand("foreColor", this.value);
+        });
+    }
+
+    if (highlightColor) {
+        highlightColor.addEventListener("input", function () {
+            restoreSelection();
+            document.execCommand("styleWithCSS", false, true);
+            // Chrome/Safari use hiliteColor; fall back to backColor.
+            if (!document.execCommand("hiliteColor", false, this.value)) {
+                document.execCommand("backColor", false, this.value);
+            }
+            saveSelection();
+            pushHistory();
+        });
+    }
+
+    // ------------------------------------------
+    // TOOLBAR STATE (active buttons, font, size)
+    // ------------------------------------------
+
+    function normalizeFontName(name) {
+        return String(name || "").split(",")[0].replace(/["']/g, "").trim().toLowerCase();
+    }
+
+    function updateToolbarState() {
+        const range = selectionInEditor();
+
+        ["bold", "italic", "underline", "justifyLeft", "justifyCenter",
+            "insertUnorderedList", "insertOrderedList"].forEach(function (command) {
+            const button = document.querySelector('.editor-toolbar [data-command="' + command + '"]');
+            if (!button) return;
+            let active = false;
+            try { active = range ? document.queryCommandState(command) : false; } catch (e) {}
+            button.classList.toggle("active", active);
+            button.setAttribute("aria-pressed", String(active));
+        });
+
+        if (!range) return;
+
+        let node = range.startContainer;
+        // When the range starts between elements, look at the element it starts on.
+        if (node.nodeType === Node.ELEMENT_NODE && node.childNodes[range.startOffset] && !range.collapsed) {
+            node = node.childNodes[range.startOffset];
+        }
+        if (node.nodeType !== Node.ELEMENT_NODE) node = node.parentElement;
+        if (!node || !editor.contains(node)) node = editor;
+
+        const computed = window.getComputedStyle(node);
+
+        if (fontFamilySelect) {
+            const current = normalizeFontName(computed.fontFamily);
+            const match = Array.from(fontFamilySelect.options).find(function (option) {
+                return normalizeFontName(option.value) === current;
+            });
+            if (match) fontFamilySelect.value = match.value;
+        }
+
+        if (fontSizeInput && document.activeElement !== fontSizeInput) {
+            fontSizeInput.value = Math.round(parseFloat(computed.fontSize)) || 16;
+        }
+    }
+
+    document.addEventListener("selectionchange", function () {
+        if (selectionInEditor()) {
+            saveSelection();
+            updateToolbarState();
+        }
+    });
+
+    // ------------------------------------------
+    // KEYBOARD SHORTCUTS
+    // ------------------------------------------
+
+    editor.addEventListener("keydown", function (event) {
+        const modifier = event.metaKey || event.ctrlKey;
+        if (!modifier) return;
+        const key = event.key.toLowerCase();
+
+        if (key === "z") {
+            event.preventDefault();
+            applyHistory(event.shiftKey ? 1 : -1);
+        } else if (key === "y") {
+            event.preventDefault();
+            applyHistory(1);
+        } else if (key === "b" || key === "i" || key === "u") {
+            event.preventDefault();
+            executeCommand({ b: "bold", i: "italic", u: "underline" }[key]);
+        }
+    });
+
+    // ------------------------------------------
+    // SAVE NOTE
+    // ------------------------------------------
+
+    const noteForm = document.getElementById("noteForm");
+
+    if (noteForm) {
+        noteForm.addEventListener("submit", function (event) {
+            const title = noteForm.querySelector(".editor-title");
+            if (title && !title.value.trim()) {
+                event.preventDefault();
+                alert("Please enter a note title.");
+                title.focus();
+                return;
+            }
+            // Remove helper zero-width spaces before saving.
+            document.getElementById("savedContent").value =
+                editor.innerHTML.replace(/​/g, "");
+        });
+    }
+
+    // ------------------------------------------
+    // SEARCH INSIDE NOTE (Enter = next match)
+    // ------------------------------------------
+
+    const editorSearch = document.getElementById("editorSearch");
+    let lastQuery = "";
+    let matchIndex = -1;
+
+    if (editorSearch) {
+        editorSearch.addEventListener("keydown", function (event) {
+            if (event.key !== "Enter") return;
+            event.preventDefault();
+
+            const query = this.value.trim().toLowerCase();
+            if (!query) return;
+
+            const matches = [];
+            const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+            let node;
+            while ((node = walker.nextNode())) {
+                const text = node.textContent.toLowerCase();
+                let position = text.indexOf(query);
+                while (position !== -1) {
+                    matches.push({ node: node, position: position });
+                    position = text.indexOf(query, position + query.length);
+                }
+            }
+
+            if (!matches.length) {
+                alert("No matching text found.");
+                return;
+            }
+
+            matchIndex = query === lastQuery ? (matchIndex + 1) % matches.length : 0;
+            lastQuery = query;
+
+            const match = matches[matchIndex];
+            const range = document.createRange();
+            range.setStart(match.node, match.position);
+            range.setEnd(match.node, match.position + query.length);
+
+            editor.focus({ preventScroll: true });
+            selectRange(range);
+            match.node.parentElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            // Return focus so Enter can jump to the next match.
+            editorSearch.focus();
+        });
+    }
+
+    // ------------------------------------------
+    // TO-DO LIST
+    // ------------------------------------------
+
+    const todoInput = document.getElementById("todoInput");
+    const todoList = document.getElementById("todoList");
+    const addTodoButton = document.getElementById("addTodoButton");
+    const progressBar = document.getElementById("todoProgressBar");
+    const progressLabel = document.getElementById("todoProgressLabel");
+
+    const todoStorageKey = "studyhiveTodos:" + (
+        (document.querySelector('input[name="note_id"]') || {}).value ||
+        "folder-" + ((document.querySelector('#noteForm input[name="folder_id"]') || {}).value || "0")
+    );
+
+    function readTodos() {
+        try {
+            return JSON.parse(localStorage.getItem(todoStorageKey)) || [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function saveTodos() {
+        if (!todoList) return;
+        const todos = Array.from(todoList.querySelectorAll(".todo-item")).map(function (item) {
+            return {
+                text: item.querySelector("span").textContent,
+                done: item.querySelector("input").checked
+            };
+        });
+        try { localStorage.setItem(todoStorageKey, JSON.stringify(todos)); } catch (error) {}
+    }
+
+    function updateTodoProgress() {
+        if (!todoList) return;
+        const total = todoList.querySelectorAll('input[type="checkbox"]').length;
+        const completed = todoList.querySelectorAll('input[type="checkbox"]:checked').length;
+        if (progressBar) progressBar.style.width = (total ? (completed / total) * 100 : 0) + "%";
+        if (progressLabel) progressLabel.textContent = completed + " of " + total + " tasks completed";
+    }
+
+    function renderTodo(task, done) {
+        const label = document.createElement("label");
+        label.className = "todo-item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = Boolean(done);
+        checkbox.addEventListener("change", function () {
+            updateTodoProgress();
+            saveTodos();
+        });
+
+        const text = document.createElement("span");
+        text.textContent = task;
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "todo-remove";
+        remove.setAttribute("aria-label", "Remove task");
+        remove.textContent = "×";
+        remove.addEventListener("click", function (event) {
+            event.preventDefault();
+            label.remove();
+            updateTodoProgress();
+            saveTodos();
+        });
+
+        label.append(checkbox, text, remove);
+        todoList.appendChild(label);
+    }
+
+    function addTodo() {
+        const task = todoInput.value.trim();
+        if (!task) return;
+        renderTodo(task, false);
+        todoInput.value = "";
+        todoInput.focus();
+        updateTodoProgress();
+        saveTodos();
+    }
+
+    if (todoList) {
+        readTodos().forEach(function (todo) { renderTodo(todo.text, todo.done); });
+    }
+    if (addTodoButton && todoInput) addTodoButton.addEventListener("click", addTodo);
+    if (todoInput) {
+        todoInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                addTodo();
+            }
+        });
+    }
+
+    document.execCommand("styleWithCSS", false, true);
+    updateTodoProgress();
+    updateHistoryButtons();
+});
+
+/* =====================================================
    POMODORO TIMER
 ===================================================== */
 

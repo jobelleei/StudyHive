@@ -152,9 +152,18 @@ $first_name = $_SESSION["first_name"] ?? "Bee";
 
                         <div class="account-edit-field">
                             <label for="accountName">Account Name</label>
-                            <input type="text" id="accountName" name="account_name" value="<?= e($first_name) ?>"
-                                maxlength="100" autocomplete="name" required>
-                            <small>This name will be displayed throughout StudyHive.</small>
+                            <div class="account-input-wrap">
+                                <svg class="account-input-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="12" cy="8" r="4" />
+                                    <path d="M4 21a8 8 0 0 1 16 0" />
+                                </svg>
+                                <input type="text" id="accountName" name="account_name" value="<?= e($first_name) ?>"
+                                    maxlength="100" autocomplete="name" placeholder="Enter your name" required>
+                                <svg class="account-input-edit" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M4 20h4L19 9l-4-4L4 16v4Z" />
+                                    <path d="m13.5 6.5 4 4" />
+                                </svg>
+                            </div>
                         </div>
 
                         <div class="settings-actions">

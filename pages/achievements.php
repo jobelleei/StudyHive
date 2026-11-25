@@ -118,7 +118,7 @@ foreach ($folder_stats as $folder) $max_minutes = max($max_minutes, (int)$folder
     </script>
 
     <link rel="stylesheet" href="../assets/css/achievements.css?v=4">
-    <link rel="stylesheet" href="../assets/css/settings-modal.css?v=3">
+    <link rel="stylesheet" href="../assets/css/settings-modal.css?v=4">
 </head>
 
 <body>

@@ -192,7 +192,7 @@ function notePreview($content, $limit = 180) {
     </script>
 
     <link rel="stylesheet" href="../assets/css/feed.css?v=4">
-    <link rel="stylesheet" href="../assets/css/settings-modal.css?v=3">
+    <link rel="stylesheet" href="../assets/css/settings-modal.css?v=4">
 </head>
 
 <body>
