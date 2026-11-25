@@ -191,8 +191,12 @@ function notePreview($content, $limit = 180) {
     })();
     </script>
 
-    <link rel="stylesheet" href="../assets/css/feed.css?v=4">
+    <link rel="stylesheet" href="../assets/css/feed.css?v=polish1">
     <link rel="stylesheet" href="../assets/css/settings-modal.css?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Coiny&display=swap">
+    <link rel="stylesheet" href="../assets/css/fonts.css?v=4">
 </head>
 
 <body>
@@ -201,16 +205,16 @@ function notePreview($content, $limit = 180) {
 
     <header class="navbar">
 
-        <a href="notes.php" class="brand">
+        <a href="feed.php" class="brand">
             <img src="../assets/images/logo.png" alt="StudyHive Logo">
         </a>
 
         <nav class="nav-links">
 
+            <a href="feed.php" class="active">FEED</a>
             <a href="notes.php">NOTES</a>
             <a href="calendar.php">CALENDAR</a>
             <a href="achievements.php">ACHIEVEMENTS</a>
-            <a href="feed.php" class="active">FEED</a>
             <a href="#" data-open-settings>SETTINGS</a>
 
         </nav>

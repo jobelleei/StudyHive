@@ -117,18 +117,22 @@ foreach ($folder_stats as $folder) $max_minutes = max($max_minutes, (int)$folder
     })();
     </script>
 
-    <link rel="stylesheet" href="../assets/css/achievements.css?v=4">
+    <link rel="stylesheet" href="../assets/css/achievements.css?v=feedvibes1">
     <link rel="stylesheet" href="../assets/css/settings-modal.css?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Coiny&display=swap">
+    <link rel="stylesheet" href="../assets/css/fonts.css?v=4">
 </head>
 
 <body>
     <header class="navbar">
-        <a href="notes.php" class="brand"><img src="../assets/images/logo.png" alt="StudyHive Logo"></a>
+        <a href="feed.php" class="brand"><img src="../assets/images/logo.png" alt="StudyHive Logo"></a>
         <nav class="nav-links">
+            <a href="feed.php">FEED</a>
             <a href="notes.php">NOTES</a>
             <a href="calendar.php">CALENDAR</a>
             <a href="achievements.php" class="active">ACHIEVEMENTS</a>
-            <a href="feed.php">FEED</a>
             <a href="#" data-open-settings>SETTINGS</a>
         </nav>
         <div class="nav-user"><span>Hi, <span data-user-name><?= e($first_name) ?></span>!</span><a
@@ -136,7 +140,24 @@ foreach ($folder_stats as $folder) $max_minutes = max($max_minutes, (int)$folder
     </header>
 
     <main class="achievement-container">
-        <h1 class="page-title"><span>BEE</span> PRODUCTIVITY PATROL</h1>
+        <section class="achieve-hero">
+
+            <div class="achieve-hero-copy">
+                <h1 class="page-title"><span>BEE</span> PRODUCTIVITY PATROL</h1>
+                <p>Track your focus time and celebrate every finished session.</p>
+            </div>
+
+            <nav class="period-pills" aria-label="Select progress period">
+                <?php foreach (["today" => "Today", "week" => "This week", "month" => "This month", "all" => "All time"] as $value => $label): ?>
+                <a href="achievements.php?period=<?= $value ?>"
+                    class="<?= $period === $value ? "is-active" : "" ?>"
+                    <?= $period === $value ? 'aria-current="page"' : "" ?>><?= $label ?></a>
+                <?php endforeach; ?>
+            </nav>
+
+        </section>
+
+        <section class="achieve-panel">
 
         <section class="progress-section">
             <div class="section-heading-row">
@@ -144,14 +165,7 @@ foreach ($folder_stats as $folder) $max_minutes = max($max_minutes, (int)$folder
                     <h2>PROGRESS</h2>
                     <p>Focus time from your completed Pomodoro sessions</p>
                 </div>
-                <form method="GET" class="period-filter">
-                    <select name="period" onchange="this.form.submit()" aria-label="Select progress period">
-                        <option value="today" <?= $period === "today" ? "selected" : "" ?>>Today</option>
-                        <option value="week" <?= $period === "week" ? "selected" : "" ?>>This week</option>
-                        <option value="month" <?= $period === "month" ? "selected" : "" ?>>This month</option>
-                        <option value="all" <?= $period === "all" ? "selected" : "" ?>>All time</option>
-                    </select>
-                </form>
+
             </div>
 
             <div class="stats-grid">
@@ -252,6 +266,8 @@ foreach ($folder_stats as $folder) $max_minutes = max($max_minutes, (int)$folder
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>
+        </section>
+
         </section>
     </main>
 

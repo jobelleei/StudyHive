@@ -2207,3 +2207,519 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
 html[data-theme="dark"] .toolbar-button.active {
     background: #ffffff22;
 }
+
+/* =====================================================
+   CONSISTENCY WITH OTHER PAGES
+   Match the navbar and heading sizes used on
+   Feed, Calendar and Achievements.
+===================================================== */
+
+.navbar {
+    width: 100%;
+    gap: 28px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    flex: 0 0 100px;
+}
+
+.nav-links a,
+.nav-user {
+    white-space: nowrap;
+}
+
+.nav-user a {
+    font-weight: 700;
+}
+
+/* Desktop only, so the mobile navbar layout above stays intact */
+@media (min-width: 761px) {
+    .nav-links {
+        justify-content: center;
+        flex: 1;
+    }
+}
+
+/* Page titles (MY NOTES, folder name): same size as other page titles */
+.section-heading h1,
+.folder-header h1 {
+    font-size: clamp(28px, 4vw, 42px);
+}
+
+/* Section titles (MY FOLDERS, RECENT WORKS): same size as other sections */
+.folder-header h2,
+.recent-heading h2 {
+    font-size: 23px;
+}
+
+
+/* =====================================================
+   FEED-STYLE LOOK
+   Same hero card, soft content panel, pills and cards
+   as the Feed page.
+===================================================== */
+
+:root {
+    --nt-blue: #5269ed;
+    --nt-blue-dark: #304bdc;
+    --nt-border: #e7e9f2;
+    --nt-shadow-sm: 0 1px 2px rgba(23, 23, 40, 0.05), 0 2px 6px rgba(23, 23, 40, 0.04);
+    --nt-shadow-md: 0 12px 28px rgba(23, 23, 40, 0.12);
+    --nt-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --nt-honeycomb: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66 0 50V18L28 2l28 16v32L28 66Zm0 32L0 82' fill='none' stroke='%23e8a90c' stroke-opacity='0.12' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+
+/* ---------- Hero card (dashboard + folder view) ---------- */
+
+.notes-hero,
+.folder-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 34px 170px 28px 38px;
+    border-radius: 26px;
+    border: 1px solid #f3e6bd;
+    background:
+        var(--nt-honeycomb),
+        linear-gradient(120deg, #fff4d1 0%, #fff9ea 45%, #eaeeff 100%);
+}
+
+.notes-hero::after,
+.folder-hero::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 34px;
+    width: 112px;
+    height: 112px;
+    margin-top: -56px;
+    background: url("../images/bee.png") center / contain no-repeat;
+    filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.14));
+    animation: notesBeeFloat 5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes notesBeeFloat {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50%      { transform: translateY(-10px) rotate(4deg); }
+}
+
+.notes-hero .section-heading {
+    align-items: flex-start;
+}
+
+.notes-hero-subtitle,
+.folder-hero .muted {
+    margin-top: 8px;
+    color: #6b6b6b;
+    font-size: 15px;
+}
+
+.folder-hero {
+    align-items: center;
+    margin-bottom: 0;
+}
+
+/* Search box (Feed style) */
+
+.notes-hero .search-box {
+    width: 280px;
+    height: 50px;
+    padding: 0 16px;
+    border: 1.5px solid var(--nt-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--nt-shadow-sm);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notes-hero .search-box:focus-within {
+    border-color: var(--nt-blue);
+    box-shadow: 0 0 0 4px rgba(82, 105, 237, 0.14);
+}
+
+.notes-hero .search-box input::placeholder {
+    color: #9a9fb2;
+}
+
+/* Period filters as pills */
+
+.filters,
+.recent-filters {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--nt-border);
+    box-shadow: var(--nt-shadow-sm);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.filters {
+    margin: 22px 0 0;
+}
+
+.recent-filters {
+    margin: 0;
+}
+
+.filters a,
+.recent-filters a {
+    padding: 8px 16px;
+    border-radius: 999px;
+    color: #6b6f80;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.filters a:hover,
+.recent-filters a:hover {
+    color: var(--nt-blue-dark);
+    background: rgba(82, 105, 237, 0.08);
+}
+
+.filters a.filter-active,
+.recent-filters a.filter-active {
+    color: #ffffff;
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--nt-blue), var(--nt-blue-dark));
+    box-shadow: 0 4px 10px rgba(82, 105, 237, 0.3);
+}
+
+/* ---------- Content panel ---------- */
+
+.notes-panel {
+    margin-top: 24px;
+    padding: 30px;
+    border-radius: 26px;
+    border: 1px solid var(--nt-border);
+    background: #f6f7fb;
+}
+
+.notes-panel .folder-grid {
+    margin-bottom: 40px;
+}
+
+.recent-heading {
+    margin-bottom: 20px;
+}
+
+.recent-heading h2 {
+    margin-bottom: 14px;
+}
+
+.recent-date {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid var(--nt-border);
+    color: #555555;
+    font-size: 12px;
+}
+
+/* ---------- Buttons ---------- */
+
+.create-button {
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--nt-blue), var(--nt-blue-dark));
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 6px 16px rgba(82, 105, 237, 0.3);
+    transition: transform 0.2s var(--nt-ease), filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-button:hover {
+    background: linear-gradient(135deg, var(--nt-blue), var(--nt-blue-dark));
+    filter: brightness(1.08);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(82, 105, 237, 0.38);
+}
+
+.cancel-button {
+    border-radius: 999px;
+    border: 1.5px solid var(--nt-border);
+    font-weight: 700;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.cancel-button:hover {
+    border-color: #c9cddc;
+    background: #f6f7fb;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    margin-bottom: 18px;
+    border-radius: 999px;
+    background: #eef1ff;
+    font-size: 13px;
+    transition: background 0.2s ease, transform 0.2s var(--nt-ease);
+}
+
+.back-link:hover {
+    background: #e1e6ff;
+    transform: translateX(-2px);
+}
+
+/* ---------- Folder cards ---------- */
+
+.folder-card {
+    min-height: 150px;
+    padding: 18px 20px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--nt-shadow-sm);
+    transition: transform 0.25s var(--nt-ease), box-shadow 0.25s ease;
+}
+
+/* Soft shine across the folder colour */
+.folder-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 55%);
+    pointer-events: none;
+}
+
+.folder-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--nt-shadow-md);
+}
+
+.folder-icon {
+    width: 42px;
+    height: 42px;
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.folder-card p {
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+/* ---------- Note cards ---------- */
+
+.note-card {
+    position: relative;
+    border-radius: 20px;
+    box-shadow: var(--nt-shadow-sm);
+    transition: transform 0.25s var(--nt-ease), box-shadow 0.25s ease;
+}
+
+.note-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 50%);
+    pointer-events: none;
+}
+
+.note-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--nt-shadow-md);
+}
+
+.note-card .note-title {
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.55);
+}
+
+.note-footer span:last-child {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* ---------- Folder view: note list ---------- */
+
+.folder-note-list {
+    margin-top: 24px;
+    gap: 20px;
+}
+
+.folder-note-item {
+    display: flex;
+    flex-direction: column;
+    padding: 22px;
+    border: 1px solid var(--nt-border);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: var(--nt-shadow-sm);
+    transition: transform 0.25s var(--nt-ease), box-shadow 0.25s ease;
+}
+
+.folder-note-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--nt-shadow-md);
+}
+
+.note-list-preview {
+    flex: 1;
+}
+
+.note-item-actions a {
+    display: flex;
+    justify-content: center;
+    padding: 11px;
+    border-radius: 12px;
+    background: #eef1ff;
+    letter-spacing: 0.5px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.note-item-actions a:hover {
+    background: var(--nt-blue-dark);
+    color: #ffffff;
+}
+
+.delete-folder-form {
+    margin-top: 26px;
+}
+
+.delete-button {
+    padding: 9px 16px;
+    border-radius: 999px;
+    transition: background 0.2s ease;
+}
+
+.delete-button:hover {
+    background: rgba(221, 51, 51, 0.08);
+}
+
+/* ---------- Empty states and folder form ---------- */
+
+.empty-state {
+    border: 1.5px dashed #d8dbe6;
+    border-radius: 20px;
+    background: #ffffff;
+}
+
+.form-panel {
+    border-color: var(--nt-border);
+    border-radius: 20px;
+    box-shadow: var(--nt-shadow-sm);
+}
+
+/* Keyboard focus */
+
+.filters a:focus-visible,
+.recent-filters a:focus-visible,
+.create-button:focus-visible,
+.folder-card:focus-visible,
+.note-card:focus-visible,
+.back-link:focus-visible,
+.note-item-actions a:focus-visible {
+    outline: 3px solid rgba(82, 105, 237, 0.45);
+    outline-offset: 2px;
+}
+
+/* ---------- Dark mode ---------- */
+
+html[data-theme="dark"] .notes-hero,
+html[data-theme="dark"] .folder-hero {
+    border-color: #343a50;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66 0 50V18L28 2l28 16v32L28 66Zm0 32L0 82' fill='none' stroke='%23ffc83d' stroke-opacity='0.07' stroke-width='1.5'/%3E%3C/svg%3E"),
+        linear-gradient(120deg, #2e2a1f 0%, #23273a 55%, #262d52 100%);
+}
+
+html[data-theme="dark"] .notes-hero-subtitle,
+html[data-theme="dark"] .folder-hero .muted {
+    color: #b9c0d1;
+}
+
+html[data-theme="dark"] .notes-hero .search-box,
+html[data-theme="dark"] .filters,
+html[data-theme="dark"] .recent-filters,
+html[data-theme="dark"] .recent-date {
+    background: #2a2f42;
+    border-color: #444b62;
+    color: #d6dae6;
+}
+
+html[data-theme="dark"] .filters a,
+html[data-theme="dark"] .recent-filters a {
+    color: #b9c0d1;
+}
+
+html[data-theme="dark"] .filters a.filter-active,
+html[data-theme="dark"] .recent-filters a.filter-active {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .notes-panel {
+    background: #1d2030;
+    border-color: #2f3448;
+}
+
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .folder-note-item,
+html[data-theme="dark"] .form-panel {
+    background: #252a3a;
+    border-color: #3a4057;
+}
+
+html[data-theme="dark"] .back-link,
+html[data-theme="dark"] .note-item-actions a {
+    background: #2d3560;
+    color: #c4ceff;
+}
+
+html[data-theme="dark"] .cancel-button:hover {
+    background: #2a2f42;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 760px) {
+    .notes-hero,
+    .folder-hero {
+        padding: 24px 22px;
+    }
+
+    .notes-hero::after,
+    .folder-hero::after {
+        top: 18px;
+        right: 16px;
+        width: 64px;
+        height: 64px;
+        margin-top: 0;
+    }
+
+    .notes-hero .section-heading > div:first-child,
+    .folder-hero > div:first-child {
+        padding-right: 70px;
+    }
+
+    .notes-hero .search-box {
+        width: 100%;
+    }
+
+    .filters,
+    .recent-filters {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .notes-panel {
+        padding: 20px 15px;
+        border-radius: 22px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .notes-hero::after,
+    .folder-hero::after {
+        animation: none;
+    }
+}

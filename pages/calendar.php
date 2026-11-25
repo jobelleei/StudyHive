@@ -250,21 +250,25 @@ $eventsJson = json_encode(
     })();
     </script>
 
-    <link rel="stylesheet" href="../assets/css/calendar.css?v=calendar-dark-layout-2">
+    <link rel="stylesheet" href="../assets/css/calendar.css?v=feedvibes2">
     <link rel="stylesheet" href="../assets/css/settings-modal.css?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Coiny&display=swap">
+    <link rel="stylesheet" href="../assets/css/fonts.css?v=4">
 </head>
 
 <body>
     <header class="navbar">
-        <a href="notes.php" class="brand">
+        <a href="feed.php" class="brand">
             <img src="../assets/images/logo.png" alt="StudyHive Logo">
         </a>
 
         <nav class="nav-links">
+            <a href="feed.php">FEED</a>
             <a href="notes.php">NOTES</a>
             <a href="calendar.php" class="active">CALENDAR</a>
             <a href="achievements.php">ACHIEVEMENTS</a>
-            <a href="feed.php">FEED</a>
             <a href="#" data-open-settings>SETTINGS</a>
         </nav>
 
@@ -282,12 +286,62 @@ $eventsJson = json_encode(
         <div class="notice notice-success"><?= e($success) ?></div>
         <?php endif; ?>
 
+        <?php
+            // Counts for the hero summary (this month only).
+            $monthEventCount = 0;
+            $monthTaskCount = 0;
+            $monthTaskDone = 0;
+            foreach ($eventsByDate as $dateKey => $items) {
+                if (strpos($dateKey, $monthParam) !== 0) continue;
+                foreach ($items as $item) {
+                    if (($item["event_type"] ?? "event") === "task") {
+                        $monthTaskCount++;
+                        if (!empty($item["is_completed"])) $monthTaskDone++;
+                    } else {
+                        $monthEventCount++;
+                    }
+                }
+            }
+        ?>
+
+        <section class="calendar-hero">
+
+            <h1>MY CALENDAR</h1>
+
+            <p class="calendar-hero-tagline">Plan your study sessions, deadlines and tasks in one place.</p>
+
+            <div class="calendar-hero-bottom">
+
+                <div class="calendar-hero-intro">
+                    <h2>THIS MONTH</h2>
+                    <p><?= e($monthDate->format("F Y")) ?> at a glance.</p>
+                </div>
+
+                <div class="calendar-hero-stats">
+                    <div class="summary-item">
+                        <span class="summary-number"><?= $monthEventCount ?></span>
+                        <span class="summary-label">EVENTS</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-number"><?= $monthTaskCount ?></span>
+                        <span class="summary-label">TASKS</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-number"><?= $monthTaskDone ?></span>
+                        <span class="summary-label">TASKS DONE</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
         <section class="calendar-layout">
             <div class="calendar-main">
                 <div class="calendar-heading">
                     <div class="month-title-wrap">
                         <span class="month-accent"></span>
-                        <h1 id="monthTitle"><?= e(strtoupper($monthDate->format("F Y"))) ?></h1>
+                        <h2 id="monthTitle"><?= e(strtoupper($monthDate->format("F Y"))) ?></h2>
                         <button type="button" class="month-picker-button" id="monthPickerButton"
                             aria-label="Choose month">
                             <span class="chevron-down"></span>

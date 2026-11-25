@@ -519,23 +519,27 @@ if (!$editor_mode && !$selected_folder) {
         }
     })();
     </script>
-    <link rel="stylesheet" href="../assets/css/notes.css?v=editor2">
+    <link rel="stylesheet" href="../assets/css/notes.css?v=feedvibes1">
     <link rel="stylesheet" href="../assets/css/settings-modal.css?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Coiny&display=swap">
+    <link rel="stylesheet" href="../assets/css/fonts.css?v=4">
 </head>
 
 <body>
 
     <header class="navbar">
 
-        <a href="notes.php" class="brand">
+        <a href="feed.php" class="brand">
             <img src="../assets/images/logo.png" alt="StudyHive Logo">
         </a>
 
         <nav class="nav-links">
+            <a href="feed.php">FEED</a>
             <a href="notes.php" class="active">NOTES</a>
             <a href="calendar.php">CALENDAR</a>
             <a href="achievements.php">ACHIEVEMENTS</a>
-            <a href="feed.php">FEED</a>
             <a href="#" data-open-settings>SETTINGS</a>
         </nav>
 
@@ -822,7 +826,7 @@ if (!$editor_mode && !$selected_folder) {
 
         <a href="notes.php" class="back-link">&larr; BACK TO MY NOTES</a>
 
-        <div class="folder-header">
+        <div class="folder-header folder-hero">
 
             <div>
                 <h1><?= e($selected_folder["folder_name"]) ?></h1>
@@ -884,9 +888,14 @@ if (!$editor_mode && !$selected_folder) {
         <?php else: ?>
         <!-- NOTES DASHBOARD -->
 
+        <section class="notes-hero">
+
         <div class="section-heading">
 
-            <h1>MY NOTES</h1>
+            <div>
+                <h1>MY NOTES</h1>
+                <p class="notes-hero-subtitle">Organize your folders and pick up right where you left off.</p>
+            </div>
 
             <div class="search-box">
 
@@ -910,6 +919,10 @@ if (!$editor_mode && !$selected_folder) {
             <a href="notes.php?period=month" class="<?= $period === "month" ? "filter-active" : "" ?>">This month</a>
 
         </div>
+
+        </section>
+
+        <section class="notes-panel">
 
         <div class="folder-header">
 
@@ -1082,6 +1095,8 @@ if (!$editor_mode && !$selected_folder) {
                 <?php endif; ?>
 
             </div>
+
+        </section>
 
         </section>
 

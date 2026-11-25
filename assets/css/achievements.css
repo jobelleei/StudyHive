@@ -590,3 +590,366 @@ html[data-theme="dark"] .start-button {
         display: none;
     }
 }
+
+
+/* =====================================================
+   FEED-STYLE LOOK
+   Same hero card, soft panel, pills and cards as Feed.
+===================================================== */
+
+:root {
+    --ac-blue: #5269ed;
+    --ac-blue-dark: #304bdc;
+    --ac-border: #e7e9f2;
+    --ac-shadow-sm: 0 1px 2px rgba(23, 23, 40, 0.05), 0 2px 6px rgba(23, 23, 40, 0.04);
+    --ac-shadow-md: 0 12px 28px rgba(23, 23, 40, 0.12);
+    --ac-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Hero card ---------- */
+
+.achieve-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 34px 190px 30px 38px;
+    border-radius: 26px;
+    border: 1px solid #f3e6bd;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66 0 50V18L28 2l28 16v32L28 66Zm0 32L0 82' fill='none' stroke='%23e8a90c' stroke-opacity='0.12' stroke-width='1.5'/%3E%3C/svg%3E"),
+        linear-gradient(120deg, #fff4d1 0%, #fff9ea 45%, #eaeeff 100%);
+}
+
+.achieve-hero::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 40px;
+    width: 112px;
+    height: 112px;
+    margin-top: -56px;
+    background: url("../images/bee.png") center / contain no-repeat;
+    filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.14));
+    animation: acBeeFloat 5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes acBeeFloat {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50%      { transform: translateY(-10px) rotate(4deg); }
+}
+
+.achieve-hero .page-title {
+    margin-bottom: 0;
+    line-height: 1.15;
+}
+
+.achieve-hero-copy p {
+    margin-top: 8px;
+    color: #6b6b6b;
+    font-size: 15px;
+}
+
+/* Period pills (replace the dropdown) */
+
+.period-pills {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 22px;
+    padding: 4px;
+    border-radius: 999px;
+    border: 1px solid var(--ac-border);
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: var(--ac-shadow-sm);
+}
+
+.period-pills a {
+    padding: 8px 16px;
+    border-radius: 999px;
+    color: #6b6f80;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.period-pills a:hover {
+    color: var(--ac-blue-dark);
+    background: rgba(82, 105, 237, 0.08);
+}
+
+.period-pills a.is-active {
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--ac-blue), var(--ac-blue-dark));
+    box-shadow: 0 4px 10px rgba(82, 105, 237, 0.3);
+}
+
+/* ---------- Content panel ---------- */
+
+.achieve-panel {
+    margin-top: 24px;
+    padding: 30px;
+    border-radius: 26px;
+    border: 1px solid var(--ac-border);
+    background: #f6f7fb;
+}
+
+.progress-section {
+    margin-bottom: 30px;
+}
+
+.section-heading-row p {
+    color: #7a7d89;
+}
+
+/* Stat tiles */
+
+.stat-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
+    padding: 22px 24px;
+    border: 1px solid var(--ac-border);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: var(--ac-shadow-sm);
+    transition: transform 0.25s var(--ac-ease), box-shadow 0.25s ease;
+}
+
+.stat-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ffc83d, #f0a500);
+}
+
+.stat-card:nth-child(2)::before {
+    background: linear-gradient(90deg, var(--ac-blue), var(--ac-blue-dark));
+}
+
+.stat-card:nth-child(3)::before {
+    background: linear-gradient(90deg, #48b99a, #2f9e7f);
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ac-shadow-md);
+}
+
+.stat-card span {
+    letter-spacing: 1px;
+}
+
+.stat-card strong {
+    font-weight: 800;
+    color: var(--ac-blue);
+}
+
+/* Chart card */
+
+.chart-section {
+    margin-bottom: 30px;
+    padding: 26px 28px 24px;
+    border: 1px solid var(--ac-border);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: var(--ac-shadow-sm);
+}
+
+.chart-unit,
+.today-date {
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--ac-border);
+    background: #ffffff;
+    color: #555555;
+}
+
+.chart-list {
+    border-bottom: 1.5px dashed #d8dbe6;
+}
+
+.chart-track {
+    border-radius: 12px 12px 0 0;
+    background: #f1f3f9;
+}
+
+.chart-bar {
+    border-radius: 12px 12px 0 0;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0)) !important;
+    background-blend-mode: normal;
+    transition: height 0.6s var(--ac-ease), filter 0.2s ease;
+}
+
+.chart-row:hover .chart-bar {
+    filter: brightness(1.06) saturate(1.1);
+}
+
+.chart-value {
+    color: #444444;
+}
+
+/* Today's Achievabee */
+
+.achievabee-section {
+    margin-top: 0;
+}
+
+.achievement-card {
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    padding: 16px 18px;
+    box-shadow: var(--ac-shadow-sm);
+    transition: transform 0.25s var(--ac-ease), box-shadow 0.25s ease;
+}
+
+.achievement-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ac-shadow-md);
+}
+
+.trophy-badge {
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ffd65a, #f0a500);
+    color: #5a3b00;
+    box-shadow: 0 6px 14px rgba(240, 165, 0, 0.35);
+}
+
+.achievement-info h3 {
+    font-size: 15px;
+}
+
+.achievement-meta span {
+    color: #444444;
+}
+
+.completed-label {
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #e3f6e8;
+    letter-spacing: 0.6px;
+}
+
+/* Empty states */
+
+.empty-state {
+    border: 1.5px dashed #d8dbe6;
+    border-radius: 20px;
+    background: #ffffff;
+}
+
+.start-button {
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--ac-blue), var(--ac-blue-dark));
+    letter-spacing: 0.5px;
+    box-shadow: 0 6px 16px rgba(82, 105, 237, 0.3);
+    transition: transform 0.2s var(--ac-ease), filter 0.2s ease;
+}
+
+.start-button:hover {
+    filter: brightness(1.08);
+    transform: translateY(-2px);
+}
+
+/* Keyboard focus */
+
+.period-pills a:focus-visible,
+.start-button:focus-visible {
+    outline: 3px solid rgba(82, 105, 237, 0.45);
+    outline-offset: 2px;
+}
+
+/* ---------- Dark mode ---------- */
+
+html[data-theme="dark"] .achieve-hero {
+    border-color: #343a50;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66 0 50V18L28 2l28 16v32L28 66Zm0 32L0 82' fill='none' stroke='%23ffc83d' stroke-opacity='0.07' stroke-width='1.5'/%3E%3C/svg%3E"),
+        linear-gradient(120deg, #2e2a1f 0%, #23273a 55%, #262d52 100%);
+}
+
+html[data-theme="dark"] .achieve-hero-copy p {
+    color: #b9c0d1;
+}
+
+html[data-theme="dark"] .period-pills,
+html[data-theme="dark"] .chart-unit,
+html[data-theme="dark"] .today-date {
+    background: #2a2f42;
+    border-color: #444b62;
+    color: #d6dae6;
+}
+
+html[data-theme="dark"] .period-pills a {
+    color: #b9c0d1;
+}
+
+html[data-theme="dark"] .period-pills a.is-active {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .achieve-panel {
+    background: #1d2030;
+    border-color: #2f3448;
+}
+
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .chart-section,
+html[data-theme="dark"] .empty-state {
+    background: #252a3a;
+    border-color: #3a4057;
+}
+
+html[data-theme="dark"] .chart-track {
+    background: #2c3245;
+}
+
+html[data-theme="dark"] .chart-list {
+    border-bottom-color: #454b5e;
+}
+
+html[data-theme="dark"] .achievement-card {
+    border-color: #3a4057;
+}
+
+html[data-theme="dark"] .completed-label {
+    background: #24412f;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 850px) {
+    .achieve-hero {
+        padding: 26px 24px;
+    }
+
+    .achieve-hero::after {
+        top: 20px;
+        right: 18px;
+        width: 70px;
+        height: 70px;
+        margin-top: 0;
+    }
+
+    .achieve-hero-copy {
+        padding-right: 80px;
+    }
+
+    .achieve-panel {
+        padding: 20px 15px;
+        border-radius: 22px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .achieve-hero::after {
+        animation: none;
+    }
+
+    .stat-card,
+    .achievement-card {
+        transition: none;
+    }
+}

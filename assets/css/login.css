@@ -364,12 +364,15 @@ body {
 
     display: block;
 
-    width: 72%;
-    max-width: 420px;
+    width: 80%;
+    max-width: 520px;
 
     height: auto;
 
     object-fit: contain;
+
+    /* Nudge right, away from the curved edge */
+    left: 6%;
 
     z-index: 2;
 }
@@ -409,7 +412,8 @@ body {
     }
 
     .honey-illustration {
-        width: 85%;
+        width: 80%;
+        left: 4%;
     }
 
 }
@@ -512,4 +516,483 @@ body {
     background: #e5f5e8;
     color: #24743a;
     border: 1px solid #b5dfbd;
+}
+
+
+/* ==========================================
+   UI POLISH
+========================================== */
+
+:root {
+    --honey: #ffc83d;
+    --honey-deep: #f0a500;
+    --honey-text: #3d2b00;
+    --ink: #1f1f24;
+    --muted: #7a7d89;
+    --field: #f6f7fa;
+    --field-border: #e4e6ee;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.login-section {
+    box-shadow: 18px 0 50px rgba(160, 120, 0, 0.12);
+}
+
+.login-container {
+    width: 400px;
+    animation: loginRise 0.6s var(--ease) both;
+}
+
+@keyframes loginRise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Logo */
+
+.login-logo {
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.login-logo img {
+    width: 96px;
+    height: 96px;
+    filter: drop-shadow(0 10px 16px rgba(240, 165, 0, 0.3));
+    transition: transform 0.3s var(--ease);
+}
+
+.login-logo img:hover {
+    transform: rotate(-8deg) scale(1.05);
+}
+
+/* Heading */
+
+.login-container h1 {
+    font-size: 44px;
+    color: #3f7fd6;
+    margin-bottom: 6px;
+}
+
+.login-subtitle {
+    margin-bottom: 28px;
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Labels */
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    margin: 0 0 8px 4px;
+    color: #4a4d58;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+}
+
+.password-heading label,
+.forgot-password {
+    margin-bottom: 8px;
+}
+
+/* Fields with icons */
+
+.input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 17px;
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: #a0a4b2;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+    transition: stroke 0.2s ease;
+}
+
+.form-group input {
+    height: 54px;
+    padding: 0 48px 0 48px;
+    border: 1.5px solid var(--field-border);
+    border-radius: 14px;
+    background: var(--field);
+    box-shadow: none;
+    font-size: 16px;
+    color: var(--ink);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.form-group input::placeholder {
+    color: #a4a7b3;
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.form-group input:hover {
+    border-color: #d5d8e3;
+}
+
+.form-group input:focus {
+    background: #ffffff;
+    border-color: var(--honey);
+    box-shadow: 0 0 0 4px rgba(255, 200, 61, 0.28);
+}
+
+.input-wrap:focus-within .input-icon {
+    stroke: var(--honey-deep);
+}
+
+/* Show / hide password */
+
+.toggle-password {
+    position: absolute;
+    right: 8px;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #a0a4b2;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.toggle-password:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #5b5f6d;
+}
+
+.toggle-password:focus-visible {
+    outline: 3px solid rgba(255, 200, 61, 0.6);
+    outline-offset: 1px;
+}
+
+.toggle-password svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.toggle-password .eye-closed,
+.toggle-password.is-visible .eye-open {
+    display: none;
+}
+
+.toggle-password.is-visible .eye-closed {
+    display: block;
+}
+
+/* Forgot password */
+
+.forgot-password {
+    color: #d99400;
+}
+
+.forgot-password:hover {
+    color: #b57a00;
+}
+
+/* Login button: dark text on honey for readable contrast */
+
+.login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 56px;
+    margin-top: 8px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ffd65a 0%, var(--honey) 45%, var(--honey-deep) 100%);
+    color: var(--honey-text);
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    box-shadow: 0 10px 22px rgba(240, 165, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    transition: transform 0.2s var(--ease), box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.login-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.2s var(--ease);
+}
+
+.login-btn:hover {
+    background: linear-gradient(135deg, #ffd65a 0%, var(--honey) 45%, var(--honey-deep) 100%);
+    filter: brightness(1.04);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(240, 165, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.login-btn:hover svg {
+    transform: translateX(4px);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 12px rgba(240, 165, 0, 0.35);
+}
+
+.login-btn:focus-visible {
+    outline: 3px solid rgba(63, 127, 214, 0.45);
+    outline-offset: 3px;
+}
+
+/* Sign up link */
+
+.signup-text {
+    margin-top: 22px;
+    color: var(--muted);
+}
+
+.signup-text a {
+    margin-left: 4px;
+    color: #d99400;
+}
+
+/* Alerts */
+
+.login-error,
+.login-success {
+    width: 100%;
+    padding: 12px 15px;
+    border-left-width: 4px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+/* Illustration side */
+
+.honey-glow {
+    position: absolute;
+    left: 56%;
+    top: 50%;
+    width: 560px;
+    height: 560px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 65%);
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.honey-illustration {
+    filter: drop-shadow(0 30px 35px rgba(150, 100, 0, 0.22));
+    animation: honeyFloat 6s ease-in-out infinite;
+}
+
+@keyframes honeyFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-14px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-container,
+    .honey-illustration {
+        animation: none;
+    }
+}
+
+@media screen and (max-width: 650px) {
+    .login-container {
+        width: 100%;
+        max-width: 380px;
+        padding: 0 4px;
+    }
+
+    .login-section {
+        box-shadow: none;
+    }
+}
+
+
+/* ==========================================
+   BLOB BACKGROUND
+   Same organic yellow blobs as the home page,
+   replacing the straight yellow panel.
+========================================== */
+
+body {
+    background: #ffffff;
+}
+
+.login-page {
+    background: #ffffff;
+}
+
+/* Main yellow blob (top right, behind the honey) */
+.login-page::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 54%;
+    height: 88%;
+    background: #ffdb36;
+    border-radius: 10% 0 0 55%;
+    z-index: 0;
+}
+
+/* Pale yellow blob (bottom left, behind the form) */
+.login-page::after {
+    content: "";
+    position: absolute;
+    left: -15%;
+    bottom: -24%;
+    width: 62%;
+    height: 72%;
+    background: rgba(255, 235, 112, 0.6);
+    border-radius: 45% 55% 0 0;
+    transform: rotate(12deg);
+    z-index: 0;
+}
+
+/* Let the blobs show through both halves */
+.login-section {
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.login-illustration {
+    background: transparent;
+    overflow: visible;
+}
+
+/* Small floating accent blob instead of the old pale strip */
+.illustration-background {
+    top: auto;
+    left: auto;
+    right: 62%;
+    bottom: 9%;
+    width: 120px;
+    height: 120px;
+    clip-path: none;
+    border-radius: 58% 42% 55% 45% / 48% 60% 40% 52%;
+    background: #fff0a0;
+    animation: blobMorph 9s ease-in-out infinite;
+}
+
+@keyframes blobMorph {
+    0%, 100% { border-radius: 58% 42% 55% 45% / 48% 60% 40% 52%; transform: translateY(0); }
+    50%      { border-radius: 42% 58% 45% 55% / 60% 44% 56% 40%; transform: translateY(-10px); }
+}
+
+/* Keep the honey centred on the yellow blob */
+.honey-illustration {
+    top: -6%;
+}
+
+.honey-glow {
+    top: 44%;
+}
+
+@media screen and (max-width: 900px) {
+    .login-page::before {
+        width: 50%;
+        height: 80%;
+    }
+}
+
+@media screen and (max-width: 650px) {
+    .login-page::before {
+        width: 62%;
+        height: 17%;
+        border-radius: 0 0 0 70%;
+    }
+
+    .login-page::after {
+        left: -30%;
+        bottom: -10%;
+        width: 110%;
+        height: 32%;
+    }
+
+    .login-section {
+        position: relative;
+        z-index: 2;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .illustration-background {
+        animation: none;
+    }
+}
+
+
+/* ==========================================
+   SIGN UP PAGE (shares the login design)
+========================================== */
+
+/* First and last name side by side */
+.name-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.name-row .form-group input {
+    padding-right: 14px;
+}
+
+/* Slightly tighter spacing so four fields fit on one screen */
+.signup-page .login-logo img {
+    width: 80px;
+    height: 80px;
+}
+
+.signup-page .login-container h1 {
+    font-size: 40px;
+}
+
+.signup-page .login-subtitle {
+    margin-bottom: 22px;
+}
+
+.signup-page .form-group {
+    margin-bottom: 15px;
+}
+
+.signup-page .form-group input {
+    height: 50px;
+}
+
+.signup-page .login-page,
+.signup-page {
+    min-height: 720px;
+}
+
+@media screen and (max-width: 420px) {
+    .name-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
 }

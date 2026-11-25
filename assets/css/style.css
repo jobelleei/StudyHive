@@ -258,11 +258,11 @@ body {
 .hero-bee {
     position: absolute;
 
-    width: 18%;
+    width: 25%;
     height: auto;
 
-    top: -8%;
-    left: 15%;
+    top: -12.5%;
+    left: 12%;
 
     object-fit: contain;
 
@@ -319,7 +319,7 @@ body {
     }
 
     .hero-bee {
-        width: 18%;
+        width: 25%;
     }
 
 }
@@ -428,10 +428,10 @@ body {
     }
 
     .hero-bee {
-        width: 20%;
+        width: 27%;
 
-        top: -7%;
-        left: 17%;
+        top: -11.5%;
+        left: 14%;
     }
 
 }

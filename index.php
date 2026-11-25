@@ -8,7 +8,11 @@
     <title>StudyHive | Bee Creative</title>
 
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=bee2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Coiny&display=swap">
+    <link rel="stylesheet" href="assets/css/fonts.css?v=4">
 </head>
 
 <body>

@@ -839,3 +839,442 @@ html[data-theme="dark"] .create-note-link {
     }
 
 }
+
+
+/* =====================================================
+   CONSISTENCY WITH OTHER PAGES
+   Navbar and heading sizes match Notes, Calendar
+   and Achievements.
+===================================================== */
+
+.brand {
+    display: flex;
+    align-items: center;
+    flex: 0 0 100px;
+}
+
+.nav-links a {
+    white-space: nowrap;
+}
+
+.nav-links a.active::after {
+    height: 5px;
+}
+
+.nav-user {
+    gap: 12px;
+    color: #555555;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.feed-container {
+    margin: 25px auto 75px;
+}
+
+/* Page title: same as other page titles */
+.feed-hero h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    letter-spacing: normal;
+    margin-bottom: 8px;
+}
+
+/* Section titles: same as other section titles */
+.feed-intro h2,
+.latest-heading h2 {
+    font-size: 23px;
+}
+
+
+/* =====================================================
+   UI POLISH
+===================================================== */
+
+:root {
+    --feed-blue: #5269ed;
+    --feed-blue-dark: #304bdc;
+    --feed-honey: #ffc83d;
+    --feed-border: #e7e9f2;
+    --feed-shadow-sm: 0 1px 2px rgba(23, 23, 40, 0.05), 0 2px 6px rgba(23, 23, 40, 0.04);
+    --feed-shadow-md: 0 12px 28px rgba(23, 23, 40, 0.1);
+    --feed-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Hero card ---------- */
+
+.feed-hero {
+    min-height: 0;
+    padding: 34px 38px 30px;
+    border-radius: 26px;
+    overflow: hidden;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66 0 50V18L28 2l28 16v32L28 66Zm0 32L0 82' fill='none' stroke='%23e8a90c' stroke-opacity='0.12' stroke-width='1.5'/%3E%3C/svg%3E"),
+        linear-gradient(120deg, #fff4d1 0%, #fff9ea 45%, #eaeeff 100%);
+    border: 1px solid #f3e6bd;
+}
+
+/* Replace the old blue band with a floating bee */
+.feed-hero::before {
+    display: none;
+}
+
+.feed-hero::after {
+    content: "";
+    position: absolute;
+    top: 18px;
+    right: 38px;
+    width: 120px;
+    height: 120px;
+    background: url("../images/bee.png") center / contain no-repeat;
+    filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.14));
+    animation: feedBeeFloat 5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes feedBeeFloat {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50%      { transform: translateY(-10px) rotate(4deg); }
+}
+
+.feed-hero > p {
+    max-width: 520px;
+    color: #6b6b6b;
+    font-size: 15px;
+}
+
+.feed-hero-bottom {
+    margin-top: 30px;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+}
+
+.feed-intro p {
+    color: #6b6b6b;
+}
+
+.feed-summary {
+    gap: 14px;
+}
+
+.summary-item {
+    min-width: 128px;
+    padding: 14px 20px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: var(--feed-shadow-sm);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.summary-number {
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 800;
+    color: var(--feed-blue);
+}
+
+.summary-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+/* ---------- Content panel ---------- */
+
+.feed-content {
+    min-height: 0;
+    margin-top: 24px;
+    padding: 30px;
+    border-radius: 26px;
+    border: 1px solid var(--feed-border);
+    background: #f6f7fb;
+}
+
+/* Search */
+
+.feed-search {
+    height: 54px;
+    padding: 0 8px 0 20px;
+    border: 1.5px solid var(--feed-border);
+    box-shadow: var(--feed-shadow-sm);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feed-search:focus-within {
+    border-color: var(--feed-blue);
+    box-shadow: 0 0 0 4px rgba(82, 105, 237, 0.14);
+}
+
+.feed-search svg {
+    width: 21px;
+    height: 21px;
+    stroke: #8a8fa3;
+}
+
+.feed-search input {
+    font-style: normal;
+}
+
+.feed-search input::placeholder {
+    color: #9a9fb2;
+}
+
+.feed-search button {
+    padding: 11px 22px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--feed-blue), var(--feed-blue-dark));
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(82, 105, 237, 0.3);
+    transition: transform 0.2s var(--feed-ease), filter 0.2s ease;
+}
+
+.feed-search button:hover {
+    background: linear-gradient(135deg, var(--feed-blue), var(--feed-blue-dark));
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+/* Filters */
+
+.filter-label {
+    color: #8a8fa3;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.feed-select {
+    padding: 11px 38px 11px 16px;
+    border: 1.5px solid var(--feed-border);
+    border-radius: 999px;
+    appearance: none;
+    -webkit-appearance: none;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 14px center / 14px no-repeat,
+        #ffffff;
+    box-shadow: var(--feed-shadow-sm);
+    transition: border-color 0.2s ease;
+}
+
+.feed-select:hover,
+.feed-select:focus {
+    border-color: var(--feed-blue);
+}
+
+/* Section heading */
+
+.latest-heading {
+    padding-top: 6px;
+}
+
+.view-notes-link,
+.create-note-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 20px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--feed-blue), var(--feed-blue-dark));
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(82, 105, 237, 0.28);
+    transition: transform 0.2s var(--feed-ease), filter 0.2s ease;
+}
+
+.view-notes-link::after {
+    content: "→";
+    font-size: 13px;
+    transition: transform 0.2s var(--feed-ease);
+}
+
+.view-notes-link:hover,
+.create-note-link:hover {
+    background: linear-gradient(135deg, var(--feed-blue), var(--feed-blue-dark));
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.view-notes-link:hover::after {
+    transform: translateX(3px);
+}
+
+/* ---------- Note cards ---------- */
+
+.feed-notes-grid {
+    gap: 20px;
+}
+
+.feed-note-card {
+    min-height: 250px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: var(--feed-shadow-sm);
+    transition: transform 0.25s var(--feed-ease), box-shadow 0.25s ease;
+}
+
+.feed-note-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--feed-shadow-md);
+}
+
+.note-card-top {
+    margin-bottom: 16px;
+}
+
+.note-folder {
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.3px;
+}
+
+.note-file-icon {
+    width: 34px;
+    height: 34px;
+    padding: 7px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.feed-note-card h3 {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+/* Keep previews tidy: at most three lines */
+.note-preview {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: #5a5a5a;
+    font-size: 13px;
+}
+
+.note-card-footer {
+    border-top: 1px dashed rgba(0, 0, 0, 0.15);
+}
+
+.open-note-button {
+    padding: 12px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    letter-spacing: 0.5px;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s var(--feed-ease);
+}
+
+.open-note-button svg {
+    transition: transform 0.2s var(--feed-ease);
+}
+
+.open-note-button:hover svg {
+    transform: translateX(4px);
+}
+
+/* Empty state */
+
+.feed-empty-state {
+    border: 1.5px dashed var(--feed-border);
+    box-shadow: none;
+}
+
+/* Keyboard focus */
+
+.nav-links a:focus-visible,
+.feed-search button:focus-visible,
+.feed-select:focus-visible,
+.view-notes-link:focus-visible,
+.open-note-button:focus-visible,
+.create-note-link:focus-visible {
+    outline: 3px solid rgba(82, 105, 237, 0.4);
+    outline-offset: 2px;
+}
+
+/* ---------- Dark mode ---------- */
+
+html[data-theme="dark"] .nav-user {
+    color: #c4cbe0;
+}
+
+html[data-theme="dark"] .feed-hero {
+    border-color: #343a50;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66 0 50V18L28 2l28 16v32L28 66Zm0 32L0 82' fill='none' stroke='%23ffc83d' stroke-opacity='0.07' stroke-width='1.5'/%3E%3C/svg%3E"),
+        linear-gradient(120deg, #2e2a1f 0%, #23273a 55%, #262d52 100%);
+}
+
+html[data-theme="dark"] .feed-hero-bottom {
+    background: transparent;
+}
+
+html[data-theme="dark"] .summary-item {
+    background: rgba(37, 42, 58, 0.85);
+    border-color: #3a4057;
+}
+
+html[data-theme="dark"] .feed-content {
+    background: #1d2030;
+    border-color: #2f3448;
+}
+
+html[data-theme="dark"] .feed-search {
+    border-color: #444b62;
+}
+
+html[data-theme="dark"] .feed-select {
+    border: 1.5px solid #444b62;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ccc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 14px center / 14px no-repeat,
+        #303648;
+}
+
+html[data-theme="dark"] .feed-empty-state {
+    border-color: #3a4057;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 650px) {
+    .feed-hero {
+        padding: 24px 22px;
+    }
+
+    .feed-hero::after {
+        width: 72px;
+        height: 72px;
+        top: 14px;
+        right: 16px;
+    }
+
+    .feed-hero h1 {
+        font-size: clamp(28px, 8vw, 36px);
+    }
+
+    .feed-hero > p {
+        max-width: 70%;
+    }
+
+    .feed-hero-bottom {
+        padding: 0;
+    }
+
+    .summary-item {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .feed-content {
+        padding: 20px 15px;
+        border-radius: 22px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .feed-hero::after {
+        animation: none;
+    }
+
+    .feed-note-card,
+    .feed-note-card:hover {
+        transition: none;
+        transform: none;
+    }
+}
